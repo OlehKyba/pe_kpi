@@ -1,15 +1,18 @@
 from flask import Flask, Blueprint
 from .extentions import api, migrate, db, cors
-from .resources import UserResource, AccurateUserResource
+from .namespaces import namespaces
 
 
 def create_app(config='app.configs.DevConfig'):
     app = Flask(__name__)
     app.config.from_object(config)
 
-    api_bp = Blueprint('api_blueprint', __name__)
+    for i in namespaces:
+        api.add_namespace(i)
 
+    api_bp = Blueprint('api_blueprint', __name__)
     api.init_app(api_bp)
+
     db.init_app(app)
     cors.init_app(app)
     migrate.init_app(app, db)
