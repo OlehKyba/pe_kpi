@@ -4,12 +4,11 @@ from app.extentions import api
 
 
 user_model = api.model('UserModel', {
-    'name': fields.String,
-    'surname': fields.String,
-    'patronymic': fields.String,
+    'public_id': fields.String,
     'email': fields.String,
 })
 
-user_password_model = api.inherit('UserWithPassword', user_model, {
-    'password': fields.String
+user_password_model = api.model('UserWithPassword', {
+    'email': fields.String,
+    'password': fields.String,
 })
