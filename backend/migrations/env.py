@@ -8,8 +8,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from utils.sa_guid import GUID
+import sqlalchemy as sa
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+sa.GUID = GUID
 config = context.config
 
 # Interpret the config file for Python logging.

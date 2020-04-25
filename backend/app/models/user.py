@@ -7,7 +7,7 @@ from utils.sa_guid import GUID
 class UserStatus(Enum):
 
     active = 'active'
-    email_is_not_verified = 'email is not verified'
+    email_is_not_verified = 'email_is_not_verified'
 
 
 class User(db.Model):
@@ -16,4 +16,4 @@ class User(db.Model):
     public_id = db.Column(GUID, default=uuid4, unique=True)
     password = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
-    status = db.Column(db.Enum(UserStatus), default=UserStatus.email_is_not_verified)
+    status = db.Column(db.Enum(UserStatus), nullable=False, default=UserStatus.email_is_not_verified)

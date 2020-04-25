@@ -7,13 +7,13 @@ from . import user_api
 from .models import user_model, user_password_model
 
 
-@user_api.route('/<string:email>')
+@user_api.route('/<string:public_id>')
 class AccurateUserResource(Resource):
 
     @user_api.marshal_with(user_model)
-    def get(self, email):
-        return User.query.filter_by(email=email).first_or_404(
-            description=f'User with email address:"{email}", was not found.')
+    def get(self, public_id):
+        return User.query.filter_by(public_id=public_id).first_or_404(
+            description=f'User with id:"{public_id}", was not found.')
 
 
 @user_api.route('/')

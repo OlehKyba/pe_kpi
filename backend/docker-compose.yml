@@ -20,3 +20,6 @@ services:
       - "5432:5432"
     env_file:
       - db.env
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/10-init.sql
+
