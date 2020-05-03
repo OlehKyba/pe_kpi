@@ -31,7 +31,7 @@ class ConfirmEmailResource(Resource):
         current_user.status = UserStatus.active
         db.session.commit()
 
-        return {}, 200
+        return {'message': 'The email was successfully verified.'}, 200
 
 
 @auth_api.route('/sing-up')
@@ -50,12 +50,12 @@ class SingUpResource(Resource):
         email_token = create_access_token(identity=user.public_id, fresh=True)
         query_key = current_app.config['JWT_QUERY_STRING_NAME']
         link = f'{api.url_for(ConfirmEmailResource, _external=True)}?{query_key}={email_token}'
-        send_async_email(user.email,
-                         link,
-                         '[PE KPI] Confirm email.',
-                         text_path='email_confirm.txt',
-                         html_path='email_confirm.html'
-                         )
+        send_async_email.delay(user.email,
+                               link,
+                               '[PE KPI] Confirm email.',
+                               text_path='email_confirm.txt',
+                               html_path='email_confirm.html'
+                               )
 
         return {'message': 'User successfully created.', 'public_id': str(user.public_id)}, 201
 

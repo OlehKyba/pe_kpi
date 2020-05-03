@@ -12,3 +12,4 @@ class BaseConfig:
     MAIL_PORT = 465
     MAIl_USE_TLS = False
     MAIL_USE_SSL = True
+    BROKER_URL = os.environ.get('CELERY_BROKER_URL') or 'redis://localhost:6379/0'

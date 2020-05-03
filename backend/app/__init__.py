@@ -1,6 +1,6 @@
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, has_app_context
 from redis import Redis
-from .extentions import api, migrate, db, cors, jwt, mail
+from .extentions import api, migrate, db, cors, jwt, mail, celery
 from .namespaces import namespaces
 from utils import RedisHash
 
@@ -22,6 +22,26 @@ def create_app(config='app.configs.DevConfig'):
     jwt.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    init_celery(app)
 
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
     return app
+
+
+def init_celery(app=None):
+    app = app or create_app()
+
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+
+        def __call__(self, *args, **kwargs):
+            if has_app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
