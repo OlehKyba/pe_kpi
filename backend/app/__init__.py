@@ -1,11 +1,13 @@
 from flask import Flask, Blueprint
-from .extentions import api, migrate, db, cors
+from redis import Redis
+from .extentions import api, migrate, db, cors, jwt, mail
 from .namespaces import namespaces
 
 
 def create_app(config='app.configs.DevConfig'):
     app = Flask(__name__)
     app.config.from_object(config)
+    app.redis = Redis.from_url(app.config['REDIS_URL'], decode_responses=True)
 
     for i in namespaces:
         api.add_namespace(i)
@@ -15,6 +17,8 @@ def create_app(config='app.configs.DevConfig'):
 
     db.init_app(app)
     cors.init_app(app)
+    jwt.init_app(app)
+    mail.init_app(app)
     migrate.init_app(app, db)
 
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
