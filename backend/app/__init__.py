@@ -1,15 +1,13 @@
 from flask import Flask, Blueprint, has_app_context
-from redis import Redis
+from redis import Redis, BlockingConnectionPool
 from .extentions import api, migrate, db, cors, jwt, mail, celery
 from .namespaces import namespaces
-from utils import RedisHash
+from .storage import refresh_tokens, email_confirm_tokens, change_password_tokens
 
 
-def create_app(config='app.configs.DevConfig'):
+def create_app(config='app.configs.DevConfig', redis=None):
     app = Flask(__name__)
     app.config.from_object(config)
-    app.redis = Redis.from_url(app.config['REDIS_URL'], decode_responses=True)
-    app.refresh_tokens_storage = RedisHash('refresh_tokens_storage', app.redis)
 
     for i in namespaces:
         api.add_namespace(i)
@@ -23,6 +21,12 @@ def create_app(config='app.configs.DevConfig'):
     mail.init_app(app)
     migrate.init_app(app, db)
     init_celery(app)
+
+    redis = redis or Redis(connection_pool=BlockingConnectionPool.from_url(app.config['REDIS_URL'],
+                                                                           decode_responses=True),)
+    refresh_tokens.init_app(redis, ttl=app.config['JWT_REFRESH_TOKEN_EXPIRES'])
+    email_confirm_tokens.init_app(redis, ttl=app.config['JWT_ACCESS_TOKEN_EXPIRES'])
+    change_password_tokens.init_app(redis, ttl=app.config['JWT_ACCESS_TOKEN_EXPIRES'])
 
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
     return app
