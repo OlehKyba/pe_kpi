@@ -5,22 +5,28 @@ from flask_jwt_extended import (
     jwt_refresh_token_required,
     fresh_jwt_required,
     create_refresh_token,
+    decode_token,
     get_raw_jwt,
     get_jti,
 )
 
 from . import auth_api
-from .models import sing_model, sign_in_model
+from .models import sing_model, sign_in_model, forgot_password_model, reset_password_model
 from .async_tasks import send_async_email
 
-from app.extentions import db, api
-from app.storage import refresh_tokens, email_confirm_tokens, change_password_tokens
+from app.extentions import db, api, jwt
+from app.storage import refresh_tokens, email_confirm_tokens, change_password_tokens, access_tokens_blacklist
 from app.models import User, UserStatus
 
-parser = auth_api.parser()
-parser.add_argument("Authorization", location="headers", help="Authentication token", default='Bearer ')
 
 # TODO: Wrapper for getting jri from storage and it validation.
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti, public_id = decrypted_token['jti'], decrypted_token['identity']
+    key = f'{public_id}_{jti}'
+    return access_tokens_blacklist.exists(key)
 
 
 @auth_api.route('/confirm-email')
@@ -30,9 +36,8 @@ class ConfirmEmailResource(Resource):
 
     @fresh_jwt_required
     def get(self):
-        jwt = get_raw_jwt()
-        public_id = jwt['identity']
-        jti = jwt['jti']
+        jwt_token = get_raw_jwt()
+        jti, public_id = jwt_token['jti'], jwt_token['identity']
 
         expected_jti = email_confirm_tokens.get(public_id)
 
@@ -122,16 +127,15 @@ class RefreshResource(Resource):
     MESSAGE_401 = 'Invalid refresh token!'
     MESSAGE_200 = 'OK!'
 
-    @auth_api.expect(parser)
     @auth_api.response(200, MESSAGE_200, model=sign_in_model)
     @auth_api.response(401, MESSAGE_401)
     @auth_api.response(404, MESSAGE_404)
     @jwt_refresh_token_required
     def post(self):
         """Endpoint for refreshing access tokens."""
-        jwt = get_raw_jwt()
-        public_id = jwt['identity']
-        jti = jwt['jti']
+        jwt_token = get_raw_jwt()
+        public_id = jwt_token['identity']
+        jti = jwt_token['jti']
         current_user = User.query.filter_by(public_id=public_id).first_or_404(description=self.MESSAGE_404)
 
         expected_jti = refresh_tokens.get(public_id)
@@ -145,3 +149,76 @@ class RefreshResource(Resource):
         refresh_token_jti = get_jti(refresh_token)
         refresh_tokens.set(public_id, refresh_token_jti)
         return {'access_token': access_token, 'refresh_token': refresh_token}, 200
+
+
+@auth_api.route('/forgot-password')
+class ForgotPasswordResource(Resource):
+
+    MESSAGE_404 = 'User not found!'
+    MESSAGE_202 = 'Check your email!'
+
+    @auth_api.expect(forgot_password_model, validate=True)
+    @auth_api.response(202, MESSAGE_202)
+    @auth_api.response(404, MESSAGE_404)
+    def put(self):
+        user_data = auth_api.payload
+        user = User.query.filter_by(email=user_data['email']).first_or_404(description=self.MESSAGE_404)
+
+        reset_password_token = create_access_token(identity=user.public_id, fresh=True)
+        domain = current_app.config['FRONTEND_DOMAIN']
+        link = f'{domain}/change-password/{reset_password_token}'
+
+        jti = get_jti(reset_password_token)
+        change_password_tokens.set(str(user.public_id), jti)
+
+        send_async_email.delay(user.email,
+                               link,
+                               '[PE KPI] Change Password.',
+                               text_path='change_password.txt',
+                               html_path='change_password.html'
+                               )
+
+        return {'message': self.MESSAGE_202}, 202
+
+
+@auth_api.route('/change-password')
+class ResetPasswordResource(Resource):
+
+    MESSAGE_404 = 'User not found!'
+    MESSAGE_401 = 'Invalid token!'
+    MESSAGE_200 = 'New password is ready to use!'
+
+    @auth_api.expect(reset_password_model, validate=True)
+    @auth_api.response(404, MESSAGE_404)
+    @auth_api.response(401, MESSAGE_401)
+    @auth_api.response(200, MESSAGE_200)
+    @fresh_jwt_required
+    def put(self):
+
+        data = auth_api.payload
+        jwt_token = get_raw_jwt()
+        public_id, jti = jwt_token['identity'], jwt_token['jti']
+
+        current_user = User.query.filter_by(public_id=public_id).first_or_404(description=self.MESSAGE_404)
+
+        expected_jti = change_password_tokens.get(public_id)
+
+        if expected_jti != jti:
+            return {'message': self.MESSAGE_401}, 401
+
+        current_user.set_password(data['password'])
+        db.session.add(current_user)
+        db.session.commit()
+
+        change_password_tokens.delete(public_id)
+        refresh_tokens.delete(public_id)
+
+        access_token = data.get('access_token')
+
+        if access_token:
+            decrypted_token = decode_token(access_token)
+            jti = decrypted_token['jti']
+            key = f'{current_user.public_id}_{jti}'
+            access_tokens_blacklist.set(key, jti)
+
+        return {'message': self.MESSAGE_200}, 200

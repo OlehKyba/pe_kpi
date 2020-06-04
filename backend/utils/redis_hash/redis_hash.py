@@ -24,3 +24,6 @@ class RedisHash:
         name = self._name_template.format(key)
         return self._redis_client.delete(name)
 
+    def exists(self, *keys):
+        names = [self._name_template.format(i) for i in keys]
+        return self._redis_client.exists(*names)

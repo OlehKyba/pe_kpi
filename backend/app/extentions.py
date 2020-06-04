@@ -6,8 +6,16 @@ from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from celery import Celery
 
+authorizations = {
+    'Bearer Auth': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization',
+        'default': 'Bearer '
+    },
+}
 
-api = Api()
+api = Api(security='Bearer Auth', authorizations=authorizations)
 db = SQLAlchemy()
 migrate = Migrate()
 cors = CORS()
