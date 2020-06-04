@@ -8,4 +8,5 @@ from .resources import (
     ConfirmEmailResource,
     ForgotPasswordResource,
     ResetPasswordResource,
+    SingOutResource,
 )

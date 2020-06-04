@@ -2,10 +2,10 @@ from flask import current_app
 from flask_restplus import Resource
 from flask_jwt_extended import (
     create_access_token,
+    jwt_required,
     jwt_refresh_token_required,
     fresh_jwt_required,
     create_refresh_token,
-    decode_token,
     get_raw_jwt,
     get_jti,
 )
@@ -13,20 +13,14 @@ from flask_jwt_extended import (
 from . import auth_api
 from .models import sing_model, sign_in_model, forgot_password_model, reset_password_model
 from .async_tasks import send_async_email
+from .blacklist_helpers import get_blacklist_key
 
-from app.extentions import db, api, jwt
+from app.extentions import db, api
 from app.storage import refresh_tokens, email_confirm_tokens, change_password_tokens, access_tokens_blacklist
 from app.models import User, UserStatus
 
 
 # TODO: Wrapper for getting jri from storage and it validation.
-
-
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti, public_id = decrypted_token['jti'], decrypted_token['identity']
-    key = f'{public_id}_{jti}'
-    return access_tokens_blacklist.exists(key)
 
 
 @auth_api.route('/confirm-email')
@@ -134,8 +128,7 @@ class RefreshResource(Resource):
     def post(self):
         """Endpoint for refreshing access tokens."""
         jwt_token = get_raw_jwt()
-        public_id = jwt_token['identity']
-        jti = jwt_token['jti']
+        public_id, jti = jwt_token['identity'],  jwt_token['jti']
         current_user = User.query.filter_by(public_id=public_id).first_or_404(description=self.MESSAGE_404)
 
         expected_jti = refresh_tokens.get(public_id)
@@ -216,9 +209,26 @@ class ResetPasswordResource(Resource):
         access_token = data.get('access_token')
 
         if access_token:
-            decrypted_token = decode_token(access_token)
-            jti = decrypted_token['jti']
-            key = f'{current_user.public_id}_{jti}'
+            key = get_blacklist_key(public_id, jti)
             access_tokens_blacklist.set(key, jti)
+
+        return {'message': self.MESSAGE_200}, 200
+
+
+@auth_api.route('/sing-out')
+class SingOutResource(Resource):
+
+    MESSAGE_404 = 'User not found!'
+    MESSAGE_200 = 'Successfully logout!'
+
+    @jwt_required
+    def get(self):
+        jwt_token = get_raw_jwt()
+        public_id, jti = jwt_token['identity'], jwt_token['jti']
+        User.query.filter_by(public_id=public_id).first_or_404(description=self.MESSAGE_404)
+
+        refresh_tokens.delete(public_id)
+        blacklist_key = get_blacklist_key(public_id, jti)
+        access_tokens_blacklist.set(blacklist_key, jti)
 
         return {'message': self.MESSAGE_200}, 200
