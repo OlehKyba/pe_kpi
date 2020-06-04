@@ -8,6 +8,8 @@ class BaseConfig:
 
     JWT_TOKEN_LOCATION = ['headers', 'query_string']
     JWT_QUERY_STRING_NAME = 'token'
+    JWT_BLACKLIST_ENABLED = True
+
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 465

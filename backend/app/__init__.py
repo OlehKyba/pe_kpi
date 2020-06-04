@@ -3,6 +3,7 @@ from redis import Redis, BlockingConnectionPool
 from .extentions import api, migrate, db, cors, jwt, mail, celery
 from .namespaces import namespaces
 from .storage import refresh_tokens, email_confirm_tokens, change_password_tokens, access_tokens_blacklist
+from .namespaces.auth.blacklist_helpers import check_if_token_in_blacklist
 
 
 def create_app(config='app.configs.DevConfig', redis=None):
@@ -29,6 +30,8 @@ def create_app(config='app.configs.DevConfig', redis=None):
     access_tokens_blacklist.init_app(redis, ttl=app.config['JWT_ACCESS_TOKEN_EXPIRES'])
 
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
+
+    register_endpoints(app)
     return app
 
 
@@ -49,3 +52,10 @@ def init_celery(app=None):
 
     celery.Task = ContextTask
     return celery
+
+
+def register_endpoints(app):
+
+    @jwt.token_in_blacklist_loader
+    def check(decrypted_token):
+        return check_if_token_in_blacklist(decrypted_token)
