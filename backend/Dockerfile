@@ -13,5 +13,3 @@ RUN apt-get autoremove -y gcc
 COPY . /app
 
 EXPOSE 5000
-RUN chmod +x ./boot.sh
-ENTRYPOINT ["./boot.sh"]

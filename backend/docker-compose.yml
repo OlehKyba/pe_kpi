@@ -3,6 +3,7 @@ version: '3'
 services:
   web:
     build: .
+    command: "flask run --host 0.0.0.0"
     volumes:
       - .:/app
     ports:
@@ -11,15 +12,34 @@ services:
       - server.env
     links:
       - db
+      - redis
     depends_on:
       - db
+      - redis
+      - celery
 
   db:
     image: "postgres:10"
     ports:
-      - "5432:5432"
+      - 5433:5432
     env_file:
       - db.env
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/10-init.sql
 
+  redis:
+    image: "redis:5.0.9"
+    ports:
+    - 6379:6379
+
+  celery:
+    build: .
+    command: "celery worker -A celery_app:celery --loglevel=info"
+    env_file:
+      - server.env
+    links:
+      - db
+      - redis
+    depends_on:
+      - db
+      - redis

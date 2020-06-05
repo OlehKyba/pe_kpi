@@ -5,10 +5,10 @@ from app.extentions import api
 
 user_model = api.model('UserModel', {
     'public_id': fields.String,
-    'email': fields.String,
+    'templates': fields.String,
 })
 
 user_password_model = api.model('UserWithPassword', {
-    'email': fields.String,
+    'templates': fields.String,
     'password': fields.String,
 })
