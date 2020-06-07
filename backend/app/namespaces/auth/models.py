@@ -2,6 +2,13 @@ from flask_restplus.fields import String
 
 from . import auth_api
 
+confirm_req = auth_api.model('ConfirmRequest', {
+    'token': String(required=True),
+})
+
+retry_confirm_email_req = auth_api.model('RetrySendEmailRequest', {
+    'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
+})
 
 sign_req = auth_api.model('SingRequest', {
     'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
