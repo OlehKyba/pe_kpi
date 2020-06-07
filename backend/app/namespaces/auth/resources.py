@@ -12,7 +12,15 @@ from flask_jwt_extended import (
 )
 
 from . import auth_api
-from .models import sing_model, sign_in_model, forgot_password_model, reset_password_model
+from .models import (
+    default_res,
+    sign_up_res,
+    sign_in_res,
+    sign_req,
+    forgot_password_req,
+    reset_password_req,
+    refresh_req,
+)
 from .async_tasks import send_async_email
 from .blacklist_helpers import get_blacklist_key
 from .jwt_wrappers import jwt_in_storage_required
@@ -58,8 +66,9 @@ class ConfirmEmailResource(Resource):
     MESSAGE_401 = 'Invalid token!'
     MESSAGE_200 = 'The email was successfully verified.'
 
-    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'))
-    @auth_api.response(404, MESSAGE_404)
+    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'), model=default_res)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.response(200, MESSAGE_200, model=default_res)
     @jwt_in_storage_required(email_confirm_tokens, jwt_verify_strategy=verify_fresh_jwt_in_request)
     def get(self):
         """Endpoint for confirming user email."""
@@ -79,9 +88,10 @@ class SingUpResource(Resource):
     MESSAGE_201 = 'User successfully created.'
     MESSAGE_409 = 'User already exist!'
 
-    @auth_api.response(201, MESSAGE_201)
-    @auth_api.response(409, MESSAGE_409)
-    @auth_api.expect(sing_model, validate=True)
+    @auth_api.response(201, MESSAGE_201, model=sign_up_res)
+    @auth_api.response(409, MESSAGE_409, model=default_res)
+    @auth_api.expect(sign_req, validate=True)
+    @auth_api.marshal_with(sign_up_res)
     def post(self):
         """User Sign up view"""
         new_user = auth_api.payload
@@ -111,11 +121,12 @@ class SingInResource(Resource):
     MESSAGE_401 = 'Incorrect password!'
     MESSAGE_200 = 'OK!'
 
-    @auth_api.expect(sing_model, validate=True)
-    @auth_api.response(404, MESSAGE_404)
-    @auth_api.response(403, MESSAGE_403)
-    @auth_api.response(401, MESSAGE_401)
-    @auth_api.response(200, MESSAGE_200, model=sign_in_model)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.response(403, MESSAGE_403, model=default_res)
+    @auth_api.response(401, MESSAGE_401, model=default_res)
+    @auth_api.response(200, MESSAGE_200, model=sign_in_res)
+    @auth_api.expect(sign_req, validate=True)
+    @auth_api.marshal_with(sign_in_res)
     def post(self):
         """User Sign in view"""
         user_data = auth_api.payload
@@ -144,9 +155,11 @@ class RefreshResource(Resource):
     MESSAGE_401 = 'Invalid refresh token!'
     MESSAGE_200 = 'OK!'
 
-    @auth_api.response(200, MESSAGE_200, model=sign_in_model)
-    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'))
-    @auth_api.response(404, MESSAGE_404)
+    @auth_api.response(200, MESSAGE_200, model=sign_in_res)
+    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'), model=default_res)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.expect(refresh_req, validate=True)
+    @auth_api.marshal_with(sign_in_res)
     @jwt_in_storage_required(refresh_tokens, jwt_verify_strategy=verify_jwt_refresh_token_in_request)
     def post(self):
         """Endpoint for refreshing access tokens."""
@@ -167,9 +180,9 @@ class ForgotPasswordResource(Resource):
     MESSAGE_404 = 'User not found!'
     MESSAGE_202 = 'Check your email!'
 
-    @auth_api.expect(forgot_password_model, validate=True)
-    @auth_api.response(202, MESSAGE_202)
-    @auth_api.response(404, MESSAGE_404)
+    @auth_api.response(202, MESSAGE_202, model=default_res)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.expect(forgot_password_req, validate=True)
     def put(self):
         """Endpoint for sending change password link email."""
         user_data = auth_api.payload
@@ -198,10 +211,10 @@ class ResetPasswordResource(Resource):
     MESSAGE_401 = 'Invalid token!'
     MESSAGE_200 = 'New password is ready to use!'
 
-    @auth_api.expect(reset_password_model, validate=True)
-    @auth_api.response(404, MESSAGE_404)
-    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'))
-    @auth_api.response(200, MESSAGE_200)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'), model=default_res)
+    @auth_api.response(200, MESSAGE_200, model=default_res)
+    @auth_api.expect(reset_password_req, validate=True)
     @jwt_in_storage_required(change_password_tokens, jwt_verify_strategy=verify_fresh_jwt_in_request)
     def put(self):
         """Endpoint for setting new user password."""
@@ -232,9 +245,9 @@ class SingOutResource(Resource):
     MESSAGE_404 = 'User not found!'
     MESSAGE_200 = 'Successfully logout!'
 
-    @auth_api.response(404, MESSAGE_404)
-    @auth_api.response(401, 'Token has been revoked')
-    @auth_api.response(200, MESSAGE_200)
+    @auth_api.response(404, MESSAGE_404, model=default_res)
+    @auth_api.response(401, 'Token has been revoked', model=default_res)
+    @auth_api.response(200, MESSAGE_200, model=default_res)
     @jwt_required
     def get(self):
         """Sign out user view."""

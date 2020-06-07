@@ -3,26 +3,33 @@ from flask_restplus.fields import String
 from . import auth_api
 
 
-sing_model = auth_api.model('SingModel', {
+sign_req = auth_api.model('SingRequest', {
     'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
     'password': String(required=True),
 })
 
-sign_in_model = auth_api.model('SignInResponse', {
-    'access_token': String(reqired=True),
-    'refresh_token': String(reqired=True),
+sign_in_res = auth_api.model('SignInResponse', {
+    'accessToken': String(reqired=True, attribute='access_token'),
+    'refreshToken': String(reqired=True, attribute='refresh_token'),
 })
 
-forgot_password_model = auth_api.model('ForgotPasswordModel', {
+default_res = auth_api.model('DefaultResponse', {
+    'msg': String(required=True),
+})
+
+sign_up_res = auth_api.inherit('SignUpResponse', default_res, {
+    'id': String(attribute='public_id'),
+})
+
+forgot_password_req = auth_api.model('ForgotPasswordRequest', {
     'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
 })
 
-reset_password_dict = {
-    'password': {'required': True},
-    'access_token': {},
-}
+refresh_req = auth_api.model('RefreshRequest', {
+    'refreshToken': String(attribute='refresh_token', required=True)
+})
 
-reset_password_model = auth_api.model('ResetPasswordModel', {
+reset_password_req = auth_api.model('ResetPasswordRequest', {
     'password': String(required=True),
-    'access_token': String,
+    'accessToken': String(attribute='access_token'),
 })
