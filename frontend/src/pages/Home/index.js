@@ -1,10 +1,21 @@
-import React from "react";
-import { Route } from "react-router-dom";
+import React, { Component } from "react";
+import { connect } from 'react-redux';
 
-const Home = () => (
-    <section className="home">
-        <p>This is home page!</p>
-    </section>
-);
+import { userFeatch } from "../../redux/actions/authActions";
 
-export default Home;
+class Home extends Component {
+
+    componentDidMount() {
+        this.props.userFeatch();
+    }
+
+    render() {
+        return (
+            <section className="home">
+                <p>This is home page!</p>
+            </section>
+        );
+    }
+}
+
+export default connect(null, { userFeatch })(Home);

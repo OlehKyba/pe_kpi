@@ -1,6 +1,6 @@
 
 const initialState = {
-    example: [],
+    example: {},
 }
 
 export const exampleReducer = (state = initialState, action) =>{
