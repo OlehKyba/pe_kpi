@@ -1,4 +1,5 @@
 from flask_restplus import Resource
+from flask_jwt_extended import jwt_required, get_current_user
 from sqlalchemy.exc import StatementError
 
 from app.extentions import db
@@ -46,6 +47,7 @@ class UserResource(Resource):
 
         return {'message': 'User successfully created.', 'public_id': str(user.public_id)}, 201
 
-    @user_api.marshal_with(user_model, envelope='data')
+    @user_api.marshal_with(user_model)
+    @jwt_required
     def get(self):
-        return User.query.all()
+        return get_current_user()
