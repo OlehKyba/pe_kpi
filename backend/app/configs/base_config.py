@@ -9,6 +9,10 @@ class BaseConfig:
 
     JWT_TOKEN_LOCATION = ['headers', 'json']
     JWT_JSON_KEY = 'token'
+
+    #JWT_ACCESS_TOKEN_EXPIRES = 60
+    #JWT_REFRESH_TOKEN_EXPIRES = 60
+
     JWT_REFRESH_JSON_KEY = 'refreshToken'
     JWT_BLACKLIST_ENABLED = True
 

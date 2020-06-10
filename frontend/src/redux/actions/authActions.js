@@ -7,7 +7,16 @@ import {
     REGISTER_FAIL,
     VERIFY_EMAIL,
     VERIFY_EMAIL_SUCCESS,
-    VERIFY_EMAIL_FAIL, RETRY_VERIFY_EMAIL, RETRY_VERIFY_EMAIL_SUCCESS, RETRY_VERIFY_EMAIL_FAIL,
+    VERIFY_EMAIL_FAIL,
+    RETRY_VERIFY_EMAIL,
+    RETRY_VERIFY_EMAIL_SUCCESS,
+    RETRY_VERIFY_EMAIL_FAIL,
+    FORGOT_PASSWORD,
+    FORGOT_PASSWORD_SUCCESS,
+    FORGOT_PASSWORD_FAIL,
+    RESET_PASSWORD,
+    RESET_PASSWORD_SUCCESS,
+    RESET_PASSWORD_FAIL,
 } from "./types";
 
 export function login({email, password}) {
@@ -51,6 +60,29 @@ export function retryVerifyEmail({ email }) {
         promise: client => client.post('/auth/retry-confirm-email', {
             data: {
                 email,
+            }
+        })
+    };
+}
+
+export function forgotPassword({ email }) {
+    return {
+        types: [FORGOT_PASSWORD, FORGOT_PASSWORD_SUCCESS, FORGOT_PASSWORD_FAIL],
+        promise: client => client.put('/auth/forgot-password', {
+            data: {
+                email,
+            }
+        })
+    };
+}
+
+export function resetPassword({ password, token }) {
+    return {
+        types: [RESET_PASSWORD, RESET_PASSWORD_SUCCESS, RESET_PASSWORD_FAIL],
+        promise: client => client.put('/auth/change-password', {
+            data: {
+                password,
+                token,
             }
         })
     };

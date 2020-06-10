@@ -38,5 +38,5 @@ refresh_req = auth_api.model('RefreshRequest', {
 
 reset_password_req = auth_api.model('ResetPasswordRequest', {
     'password': String(required=True),
-    'accessToken': String(attribute='access_token'),
+    'token': String(attribute='access_token'),
 })

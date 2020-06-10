@@ -38,12 +38,12 @@ def description(*messages):
 
 def get_activate_link(token):
     domain = current_app.config['FRONTEND_DOMAIN']
-    return f'{domain}/verify-email/{token}'
+    return f'{domain}/sign-up/verify/{token}'
 
 
 def get_reset_password_link(token):
     domain = current_app.config['FRONTEND_DOMAIN']
-    return f'{domain}/change-password/{token}'
+    return f'{domain}/forgot-password/verify/{token}'
 
 
 def send_email_to_activate(user):
@@ -77,16 +77,20 @@ class ConfirmEmailResource(Resource):
     MESSAGE_404 = 'User not found!'
     MESSAGE_401 = 'Invalid token!'
     MESSAGE_200 = 'The email was successfully verified.'
+    MESSAGE_204 = 'User already active'
 
     @auth_api.response(401, description(MESSAGE_401, 'Token has expired', 'Fresh token required'), model=default_res)
     @auth_api.response(404, MESSAGE_404, model=default_res)
     @auth_api.response(200, MESSAGE_200, model=default_res)
+    @auth_api.response(204, MESSAGE_204)
     @auth_api.expect(confirm_req, validate=True)
     @jwt_in_storage_required(email_confirm_tokens, jwt_verify_strategy=verify_fresh_jwt_in_request)
     def put(self):
         """Endpoint for confirming user email."""
         current_user = get_current_user()
 
+        if current_user.status == UserStatus.active:
+            return {}, 204
         current_user.status = UserStatus.active
         db.session.commit()
 
@@ -98,10 +102,12 @@ class ConfirmEmailResource(Resource):
 @auth_api.route('/retry-confirm-email')
 class RetrySendEmail(Resource):
 
+    MESSAGE_409 = 'User already active'
     MESSAGE_404 = 'User not found'
     MESSAGE_403 = 'Check your email, or wait'
     MESSAGE_202 = 'Check your email'
 
+    @auth_api.response(409, MESSAGE_409, model=default_res)
     @auth_api.response(404, MESSAGE_404, model=default_res)
     @auth_api.response(403, MESSAGE_403, model=default_res)
     @auth_api.response(202, MESSAGE_202, model=default_res)
@@ -113,6 +119,9 @@ class RetrySendEmail(Resource):
 
         if not user:
             return {'msg': self.MESSAGE_404}, 404
+
+        if user.status == UserStatus.active:
+            return {'msg': self.MESSAGE_409}, 409
 
         not_expected_token = email_confirm_tokens.get(str(user.public_id))
 

@@ -22,7 +22,12 @@ const onErrorMessage = errorCode => {
                 status: "error",
                 title: 'Упс!',
                 subtitle: 'Щось пішло не так. Можливо, час на підтвердження пошти вийшов. Спробуйте підтвердити вашу пошту ще раз.',
-                extra: onClick => (<Button danger onClick={onClick}>Надіслати лист</Button>),
+                extra: () => (
+                    <Link to='/sign-up/retry-verify'>
+                        <Button danger>
+                            Надіслати лист
+                        </Button>
+                    </Link>),
             };
         default:
             return {
@@ -39,7 +44,12 @@ const onSuccessMessage = () => ({
     status: "success",
     title: "Успіх",
     subtitle: "Вітаємо! Ви підтвердили вашу електронну пошту.",
-    extra: () => null,
+    extra: () => (
+    <Link to='/sign-in'>
+        <Button danger>
+            До Входу
+        </Button>
+    </Link>),
 });
 
 

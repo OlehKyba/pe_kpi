@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 import { Form, Input, Button, Result, Alert, Spin } from 'antd';
@@ -9,16 +10,9 @@ import { registration } from "../../../../redux/actions/authActions";
 
 class RegistrationForm extends Component {
     state = {
-        email: null,
-        password: null,
         msg: null,
         isInProcess: false,
     }
-
-    onChange = e => {
-        e.preventDefault();
-        this.setState({[e.target.name]: e.target.value});
-    };
 
     message = errorCode => {
         switch (errorCode) {
@@ -29,8 +23,8 @@ class RegistrationForm extends Component {
         }
     }
 
-    onSubmit = e => {
-        const user = { email: this.state.email, password: this.state.password };
+    onSubmit = data => {
+        const user = { email: data.email, password: data.password };
         this.props.registration(user);
     };
 
@@ -53,9 +47,11 @@ class RegistrationForm extends Component {
                 title="Успіх!"
                 subTitle="Перевірте вашу електронну пошту, вам має прийти лист з посиланням на активацію акаунту. Якщо вам не прийшов лист, натисніть на кнопку."
                 extra={
-                    <Button type="primary">
-                        Надіслати лист
-                    </Button>
+                    <Link to="/sign-up/retry-verify">
+                        <Button type="primary">
+                            Надіслати лист
+                        </Button>
+                    </Link>
                 }
             />
         );
@@ -67,11 +63,7 @@ class RegistrationForm extends Component {
                         <h2>Реєстрація</h2>
                     </div>
                     <Form
-                        name="normal_login"
-                        className="login-form"
-                        initialValues={{
-                            remember: true,
-                        }}
+                        name="register_form"
                         onFinish={this.onSubmit}
                     >
                         <Form.Item
@@ -88,8 +80,6 @@ class RegistrationForm extends Component {
                             <Input
                                 prefix={<MailOutlined className="site-form-item-icon" />}
                                 placeholder="E-mail"
-                                name="email"
-                                onChange={this.onChange}
                             />
                         </Form.Item>
                         <Form.Item
@@ -105,8 +95,6 @@ class RegistrationForm extends Component {
                                 prefix={<LockOutlined className="site-form-item-icon" />}
                                 allowClear
                                 placeholder="Пароль"
-                                name="password"
-                                onChange={this.onChange}
                             />
                         </Form.Item>
 
@@ -137,12 +125,12 @@ class RegistrationForm extends Component {
                         </Form.Item>
 
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" className="login-form-button">
+                            <Button htmlType="submit" className="login-form-button">
                                 Зареєструватися
                             </Button>
                         </Form.Item>
                     </Form>
-                    {this.state.msg ? <Alert message={this.state.msg} type="error"/> : null}
+                    {this.state.msg ? <Alert showIcon message={this.state.msg} type="error"/> : null}
                 </section>
             </Spin>
         );

@@ -23,7 +23,7 @@ export function requestMiddleware(client, setTokensType=SET_TOKENS, logoutType=L
         actionPromise.then(
             result => next({...rest, result, type: SUCCESS}),
             error => {
-                if(error.code === 401 && error.body.msg === needRefreshMessage){
+                if(error.code === 401 && error.body.msg === needRefreshMessage && accessToken){
                     return client.post('/auth/refresh', { data: { refreshToken } })()
                         .then(result => next({...rest, result, type: setTokensType}))
                         .then(result => {

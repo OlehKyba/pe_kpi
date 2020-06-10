@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { connect } from "react-redux";
 
 import {Form, Input, Button, Checkbox, Result, Alert, Spin} from 'antd';
@@ -10,36 +10,36 @@ import { login } from "../../../../redux/actions/authActions";
 class LoginForm extends Component {
 
     state = {
-        email: null,
-        password: null,
         msg: null,
         isInProcess: false,
     }
 
-
-    onChange = e => {
-        e.preventDefault();
-        this.setState({[e.target.name]: e.target.value});
-    };
-
-    onSubmit = e => {
-        e.preventDefault();
-        const user = { email: this.state.email, password: this.state.password };
+    onSubmit = data => {
+        const user = { email: data.email, password: data.password };
         this.props.login(user);
     };
 
     message = errorCode => {
         switch (errorCode) {
             case 404:
-                return 'Користувач з таким email не існує!'
+                return 'Користувач з таким email не існує!';
             case 403:
-                return 'Ви маєте підтвердити свою пошту!'
+                return (
+                    <div>
+                        <span>
+                            Ви маєте підтвердити свою пошту!
+                        </span>
+                        <Link to='/sign-up/retry-verify'>
+                            <Button danger type="link" size="small">Натисніть сюди</Button>
+                        </Link>
+                    </div>
+                );
             case 401:
-                return 'Не коректний пароль!'
+                return 'Не коректний пароль!';
             default:
                 return null;
         }
-    }
+    };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { loginError, isInProcess } = this.props;
@@ -48,7 +48,6 @@ class LoginForm extends Component {
             newState.msg = this.message(loginError.code);
         }
         if (isInProcess !== prevProps.isInProcess){
-            console.log(isInProcess);
             newState.isInProcess = isInProcess;
         }
         if (Object.keys(newState).length > 0){
@@ -62,7 +61,7 @@ class LoginForm extends Component {
                 className="auth"
                 status="success"
                 title="Успіх!"
-                subTitle={`Користувач з email ${this.state.email} успішно зайшов у свій акаунт.`}
+                subTitle="Ви успішно зайшли в свій акаунт!"
                 extra={<Link to="/home"><Button type="link">На головну</Button></Link>}
             />
         );
@@ -96,8 +95,6 @@ class LoginForm extends Component {
                             <Input
                                 prefix={<MailOutlined className="site-form-item-icon" />}
                                 placeholder="E-mail"
-                                name="email"
-                                onChange={this.onChange}
                             />
                         </Form.Item>
                         <Form.Item
@@ -110,11 +107,9 @@ class LoginForm extends Component {
                             ]}
                         >
                             <Input.Password
-                                name="password"
                                 prefix={<LockOutlined className="site-form-item-icon" />}
                                 allowClear
                                 placeholder="Пароль"
-                                onChange={this.onChange}
                             />
                         </Form.Item>
 
@@ -129,13 +124,13 @@ class LoginForm extends Component {
                         </Form.Item>
 
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" className="login-form-button" onClick={this.onSubmit}>
+                            <Button type="primary" htmlType="submit" className="login-form-button">
                                 Увійти
                             </Button>
                             або <Link to="/sign-up">зареєструватися!</Link>
                         </Form.Item>
                     </Form>
-                    {this.state.msg ? <Alert message={this.state.msg} type="error"/> : null}
+                    {this.state.msg ? <Alert message={this.state.msg} type="error" showIcon/> : null}
                 </section>
             </Spin>
 
@@ -152,4 +147,4 @@ const mapStateToProps = state => {
         loginError: state.auth.loginError,
     }
 };
-export default connect(mapStateToProps, { login })(withRouter(LoginForm));
+export default connect(mapStateToProps, { login })(LoginForm);

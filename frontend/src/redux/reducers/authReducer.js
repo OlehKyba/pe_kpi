@@ -13,6 +13,12 @@ import {
     RETRY_VERIFY_EMAIL,
     RETRY_VERIFY_EMAIL_SUCCESS,
     RETRY_VERIFY_EMAIL_FAIL,
+    FORGOT_PASSWORD,
+    FORGOT_PASSWORD_SUCCESS,
+    FORGOT_PASSWORD_FAIL,
+    RESET_PASSWORD,
+    RESET_PASSWORD_SUCCESS,
+    RESET_PASSWORD_FAIL,
 } from '../actions/types';
 
 const initialState = {
@@ -22,6 +28,8 @@ const initialState = {
     isRegisterComplete: false,
     isisVerifyingEmail: false,
     isVerifiedEmail: false,
+    isRetryingVerifyEmail: false,
+    isAcceptedTry: false,
 }
 
 export const authReducer = (state = initialState, action) =>{
@@ -96,6 +104,7 @@ export const authReducer = (state = initialState, action) =>{
             return {
                 ...state,
                 isRetryingVerifyEmail: true,
+                isAcceptedTry: false,
             };
         case RETRY_VERIFY_EMAIL_SUCCESS:
             return {
@@ -107,9 +116,47 @@ export const authReducer = (state = initialState, action) =>{
             return {
                 ...state,
                 isRetryingVerifyEmail: false,
-                isAcceptedTry: false,
+                isAcceptedTry: true,
                 retryVerifyEmailError: action.error,
             }
+        case FORGOT_PASSWORD:
+            return {
+                ...state,
+                isForgotPasswordInProcess: true,
+                isForgotPasswordReqComplete: false,
+            };
+        case FORGOT_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                isForgotPasswordInProcess: false,
+                isForgotPasswordReqComplete: true,
+            };
+        case FORGOT_PASSWORD_FAIL:
+            return {
+                ...state,
+                isForgotPasswordInProcess: false,
+                isForgotPasswordReqComplete: true,
+                forgotPasswordError: action.error,
+            };
+        case RESET_PASSWORD:
+            return {
+                ...state,
+                isResetPasswordInProcess: true,
+                isResetPasswordReqComplete: false,
+            };
+        case RESET_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                isResetPasswordInProcess: false,
+                isResetPasswordReqComplete: true,
+            };
+        case RESET_PASSWORD_FAIL:
+            return {
+                ...state,
+                isResetPasswordInProcess: false,
+                isResetPasswordReqComplete: true,
+                resetPasswordError: action.error,
+            };
         case 'USER':
             return {
                 ...state,
