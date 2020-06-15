@@ -129,6 +129,30 @@ export const standardsReducer = (state=getInitState(), action) => {
                     createTemporaryStorage,
                 };
             }
+        case UPDATE_STANDARD:
+        {
+            const updatedStandard = action.standard;
+            const month = moment.months(updatedStandard.date.month());
+            const updateTemporaryStorage = [...state.updateTemporaryStorage];
+            const index = state.data[month].findIndex(item => item.id === updatedStandard.id);
+            const monthArray = [...state.data[month]];
+            if (index !== -1){
+                updateTemporaryStorage.push(updatedStandard.id);
+                monthArray.splice(index, 1, updatedStandard);
+            }
+            return {
+                ...state,
+                updateTemporaryStorage,
+                data: {...state.data, [month]: monthArray},
+            };
+        }
+        case UPDATE_STANDARD_SUCCESS:
+        case UPDATE_STANDARD_FAIL:
+        {
+            return {
+                ...state,
+            }
+        }
         case DELETE_STANDARD:
         {
             const { id, date, fakeId } = action.standard;

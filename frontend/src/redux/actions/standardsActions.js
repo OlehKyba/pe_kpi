@@ -51,7 +51,8 @@ export function updateStandard({id, type, date, value}) {
                 date,
                 value,
             },
-        })
+        }),
+        standard: {id, type, date, value},
     };
 }
 

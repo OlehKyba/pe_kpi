@@ -15,7 +15,13 @@ const ControlRow = props => {
             icon={<PlusOutlined />}
         />
     );
-    const updateButton = (<Button htmlType="submit" shape="circle" icon={<UpOutlined />} />);
+    const updateButton = (
+        <Button
+            loading={props.createTemporaryStorage.some(item => item === props.id)}
+            htmlType="submit"
+            shape="circle"
+            icon={<UpOutlined />}
+        />);
 
     return (
         <Form
@@ -82,6 +88,7 @@ const ControlRow = props => {
 const mapStateToProps = state => {
     return {
         createTemporaryStorage: state.standards.createTemporaryStorage,
+        updateTemporaryStorage: state.standards.updateTemporaryStorage,
     };
 };
 
