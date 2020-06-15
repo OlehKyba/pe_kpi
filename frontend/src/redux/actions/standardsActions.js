@@ -24,7 +24,8 @@ export function readStandards({ month }) {
             params: {
                 month
             },
-        })
+        }),
+        params: { month },
     };
 }
 

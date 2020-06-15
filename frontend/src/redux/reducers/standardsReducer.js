@@ -25,22 +25,62 @@ function uuidv4() {
     });
 }
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const generateStandardsByMonth = state => {
+    const { selectedDate } = state;
+    const numberOfDays = selectedDate.daysInMonth();
+    const year = selectedDate.year();
+    const month = selectedDate.month();
+    const heartbeats = Array.from({length: numberOfDays}, (item, index) => {
+        return {
+            id: uuidv4(),
+            type: 'Пульс',
+            date: moment({year, month, date: index + 1}),
+            value: getRandomInt(60, 100),
+        };
+    });
+
+    const randomDates = Array.from({length: 5}, () => getRandomInt(1, numberOfDays - 1))
+                             .reduce((unique, item) => unique.includes(item) ? unique : [...unique, item], [])
+                             .sort()
+                             .map(date => moment({year, month, date}));
+
+    const selfAwareness = randomDates.map(date => {
+        return {
+            date,
+            id: uuidv4(),
+            type: 'Самовідчуття',
+            value: getRandomInt(1, 5),
+        };
+    });
+
+    const pullUps = randomDates.map(date => {
+        return {
+            date,
+            id: uuidv4(),
+            type: 'Підтягування',
+            value: getRandomInt(1, 10),
+        };
+    });
+
+    const data = [...heartbeats, ...selfAwareness, ...pullUps].sort((a, b) => a.date.diff(b.date))
+                                                              .map(item => ({...item, date: item.date.toISOString()}));
+    return { data };
+};
+
 
 const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4, 5]) => {
     const currentDate = date;
     const selectedDate = date;
 
-    const day = date.date();
     const currentYear = date.year();
     const currentMonth = date.month();
-    date = moment({year: currentYear, month: currentMonth, date: day});
     const terms = currentMonth > 7 ? [currentYear, currentYear + 1] : [currentYear - 1, currentYear];
-    const example = {
-        id: '45b1afd1-50bd-411e-9c12-a12af4c05bea',
-        type: 'Пульс',
-        value: 80,
-        date,
-    };
 
     const standardTypes = [
         {
@@ -61,8 +101,8 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
 
     const createTemporaryStorage = [];
     const updateTemporaryStorage = [];
+    const readTemporaryStorage = [];
 
-    data[moment.months(currentMonth)].push(example);
     return {
         currentDate,
         selectedDate,
@@ -71,6 +111,7 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
         standardTypes,
         createTemporaryStorage,
         updateTemporaryStorage,
+        readTemporaryStorage,
         defaultChart: 'line',
     };
 };
@@ -87,7 +128,42 @@ export const standardsReducer = (state=getInitState(), action) => {
                 ...state,
                 standardTypes: [...state.standardTypes, {...action.result, chart: state.defaultChart}],
             };
-
+        case READ_STANDARDS:
+        {
+            const month = action.params.month;
+            const readTemporaryStorage = [...state.readTemporaryStorage, month];
+            return {
+                ...state,
+                readTemporaryStorage,
+            };
+        }
+        case READ_STANDARDS_SUCCESS:
+        case READ_STANDARDS_FAIL:
+        {
+            const { data } = generateStandardsByMonth(state);
+            const inSystemStandardTypes = state.standardTypes.map(item => item.name);
+            const newStandardTypes = data.reduce((unique, item) =>
+                unique.includes(item.type) || inSystemStandardTypes.includes(item.type)
+                    ? unique
+                    : [...unique, item.type],
+                [])
+                .map(name => ({name, color: colors.pop(), chart: state.defaultChart}));
+            const standardTypes = [...state.standardTypes, ...newStandardTypes];
+            data.forEach(item => (item.date = moment(item.date)));
+            const { month } = action.params;
+            const monthName = moment.months(month);
+            const readTemporaryStorage = [...state.readTemporaryStorage];
+            const index = readTemporaryStorage.findIndex(item => item === month);
+            if (index !== -1){
+                readTemporaryStorage.splice(index, 1);
+            }
+            return {
+                ...state,
+                data: {...state.data, [monthName]: data},
+                standardTypes,
+                readTemporaryStorage,
+            };
+        }
         case CREATE_STANDARD:
             {
                 const standard = action.standard;

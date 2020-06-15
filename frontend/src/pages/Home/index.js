@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from 'react-redux';
 import moment from '../../moment';
 
-import {Layout, Menu, Row, Col, Breadcrumb, Divider } from 'antd';
+import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin } from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -11,10 +11,8 @@ import {
 import './index.css';
 
 import Charts from "./components/Charts";
-import { userFeatch } from "../../redux/actions/authActions";
-import { colors } from "../../colors";
 import ControlPanel from "./components/ControlPanel";
-import {selectMoment} from "../../redux/actions/standardsActions";
+import { readStandards, selectMoment } from "../../redux/actions/standardsActions";
 
 const { Content, Sider, Footer } = Layout;
 const { SubMenu } = Menu;
@@ -52,9 +50,21 @@ class Home extends Component {
         }
     }
 
+    componentDidMount() {
+        const month = this.state.moment.month();
+        this.props.readStandards({ month });
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.props.data !== prevProps.data){
             this.setState({data: this.props.data});
+        }
+        if (this.props.selectedDate !== prevProps.selectedDate){
+            const month = this.props.selectedDate.month();
+            const monthName = moment.months(this.props.selectedDate.month());
+            if (this.state.data[monthName].length === 0){
+                this.props.readStandards({month});
+            }
         }
     }
 
@@ -122,11 +132,15 @@ class Home extends Component {
                                 </Breadcrumb.Item>))
                             }
                         </Breadcrumb>
-                        <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
+                        <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
                             <Divider plain>Графіки</Divider>
                             <Row justify="center" align="center">
-                                <Col span={24} style={{minHeight: '50vh'}}>
-                                    <Charts datasets={this.props.datasets}/>
+                                <Col span={24}>
+                                    <Spin spinning={this.props.readTemporaryStorage.some(item => item === this.state.moment.month())}>
+                                        <Charts
+                                            datasets={this.props.datasets}
+                                        />
+                                    </Spin>
                                 </Col>
                             </Row>
                             <Divider plain>Заповнення</Divider>
@@ -156,45 +170,6 @@ class Home extends Component {
     }
 }
 
-const getData = value => {
-    const max = 100;
-    const min = 60;
-    const length = value.daysInMonth();
-    const labels = Array.from({length}, (x, i) => i + 1);
-    const firstDataset = Array.from({length: 5}, () => {
-        const x = labels[Math.floor(Math.random() * length)];
-        const y = Math.floor(Math.random() * (max - min) + min);
-        return {x, y};
-    });
-    const thirdDataset = Array.from({length: 5}, (res, index) => {
-        const y = Math.floor(Math.random() * (max - min) + min);
-        return {x: index + 1, y};
-    });
-    const secondDataset = Array.from({length: 5}, () => {
-        const x = labels[Math.floor(Math.random() * length)];
-        const y = Math.floor(Math.random() * (5 - 1) + 5);
-        return {x, y};
-    });
-
-    const firstColor = colors.shift();
-    const secondColor = colors.shift();
-    const thirdColor = colors.shift();
-    const bgColors1 = Array.from({length: 5}, () => firstColor);
-    const bgColors2 = Array.from({length: 5}, () => secondColor);
-    return { labels, datasets: [
-            {label: 'First', data: firstDataset, backgroundColor:bgColors1},
-            {label: 'Second', data: secondDataset, backgroundColor:bgColors2},
-            {label: 'Third', data: thirdDataset, type:'line',
-                borderColor: thirdColor,
-                backgroundColor: thirdColor,
-                pointBorderColor: thirdColor,
-                pointBackgroundColor: thirdColor,
-                pointHoverBackgroundColor: thirdColor,
-                pointHoverBorderColor: thirdColor,
-                fill: false,
-            },
-        ] };
-};
 
 const mapStateToDatasets = standardsState => {
     const { selectedDate, standardTypes, data } = standardsState;
@@ -229,8 +204,9 @@ const mapStateToProps = state => {
         data: state.standards.data,
         terms: state.standards.terms,
         datasets: mapStateToDatasets(state.standards),
+        readTemporaryStorage: state.standards.readTemporaryStorage,
     };
 };
 
 
-export default connect(mapStateToProps, { selectMoment })(Home);
+export default connect(mapStateToProps, { selectMoment, readStandards })(Home);

@@ -1,5 +1,4 @@
 import React from "react";
-import moment from "moment";
 import {Bar} from "react-chartjs-2";
 
 const Charts = props => {
@@ -14,7 +13,7 @@ const Charts = props => {
                         beginAtZero: true,
                         min: 0,
                     }
-                }]
+                }],
             }
         }}
         />
