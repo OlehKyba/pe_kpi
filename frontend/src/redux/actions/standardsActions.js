@@ -12,7 +12,7 @@ import {
     DELETE_STANDARD_SUCCESS,
     DELETE_STANDARD_FAIL,
     CREATE_STANDARD_TYPE,
-    SELECT_MOMENT,
+    SELECT_MOMENT, REMOVE_STANDARD,
 } from './types';
 
 import { colors } from "../../colors";
@@ -55,11 +55,11 @@ export function updateStandard({id, type, date, value}) {
     };
 }
 
-export function deleteStandard({ id, date, fakeId }) {
+export function deleteStandard({ id, date }) {
     return {
         types: [DELETE_STANDARD, DELETE_STANDARD_SUCCESS, DELETE_STANDARD_FAIL],
-        promise: client => client.delete(`/standards/${id}`),
-        standard: { id, date,  fakeId },
+        promise: client => client.del(`/standards/${id}`),
+        standard: { id, date },
     };
 }
 

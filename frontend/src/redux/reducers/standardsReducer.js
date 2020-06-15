@@ -20,7 +20,7 @@ import { colors } from "../../colors";
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r && 0x3 | 0x8);
         return v.toString(16);
     });
 }
@@ -45,10 +45,12 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
     const standardTypes = [
         {
             name: 'Пульс',
+            chart: 'bar',
             color: colors.pop(),
         },
         {
             name: 'Самовідчуття',
+            chart: 'bar',
             color: colors.pop(),
         }
     ];
@@ -58,9 +60,19 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
     );
 
     const createTemporaryStorage = [];
+    const updateTemporaryStorage = [];
 
     data[moment.months(currentMonth)].push(example);
-    return { currentDate, selectedDate, data, terms, standardTypes, createTemporaryStorage };
+    return {
+        currentDate,
+        selectedDate,
+        data,
+        terms,
+        standardTypes,
+        createTemporaryStorage,
+        updateTemporaryStorage,
+        defaultChart: 'line',
+    };
 };
 
 export const standardsReducer = (state=getInitState(), action) => {
@@ -73,8 +85,9 @@ export const standardsReducer = (state=getInitState(), action) => {
         case CREATE_STANDARD_TYPE:
             return {
                 ...state,
-                standardTypes: [...state.standardTypes, action.result],
+                standardTypes: [...state.standardTypes, {...action.result, chart: state.defaultChart}],
             };
+
         case CREATE_STANDARD:
             {
                 const standard = action.standard;
@@ -123,11 +136,21 @@ export const standardsReducer = (state=getInitState(), action) => {
             const monthArray = [...state.data[month]];
             const findById = item => item.id === id;
             const findByFakeId = item => item.fakeId === fakeId;
-
-            if (id) {
-
+            const find = id ? findById : findByFakeId;
+            const index = monthArray.findIndex(find);
+            if (index !== -1){
+                monthArray.splice(index, 1);
             }
+            return {
+                ...state,
+                data: {...state.data, [month]: monthArray},
+            };
         }
+        case DELETE_STANDARD_SUCCESS:
+        case DELETE_STANDARD_FAIL:
+            return {
+                ...state,
+            }
         default:
             return {...state};
     }

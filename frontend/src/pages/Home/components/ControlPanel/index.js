@@ -58,6 +58,7 @@ class ControlPanel extends Component {
                         <Collapse.Panel header={date.format('L')} key={index}>
                             <StandardForm
                                 onFinish={this.onFinish.bind(null, date)}
+                                remove={this.props.deleteStandard}
                                 moment={date}
                                 data={data}
                                 standardTypes={this.props.standardTypes}

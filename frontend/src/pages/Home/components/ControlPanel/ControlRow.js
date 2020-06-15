@@ -20,13 +20,14 @@ const ControlRow = props => {
     return (
         <Form
             onFinish={props.onFinish}
+            onFieldsChange={props.onChange}
         >
             <Space style={{ display: 'flex', marginBottom: 8, justifyContent: 'center' }}
                    align="start">
                 <Form.Item
                     initialValue={props.defaultValues ? props.defaultValues.type : null}
-                    name={['type']}
-                    fieldKey={['type']}
+                    name='type'
+                    fieldKey='type'
                     rules={[{ required: true, message: 'Ви маєте вибрати тип!' }]}
                 >
                     <Select
@@ -57,8 +58,8 @@ const ControlRow = props => {
 
                 <Form.Item
                     initialValue={props.defaultValues ? props.defaultValues.value : null}
-                    name={['value']}
-                    fieldKey={['value']}
+                    name='value'
+                    fieldKey='value'
                     rules={[{ required: true, message: 'Заповніть значення!' }]}
                 >
                     <InputNumber min={0} step={0.1} />

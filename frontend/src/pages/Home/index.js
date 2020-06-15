@@ -126,7 +126,7 @@ class Home extends Component {
                             <Divider plain>Графіки</Divider>
                             <Row justify="center" align="center">
                                 <Col span={24} style={{minHeight: '50vh'}}>
-                                    <Charts datasets={getData(moment())}/>
+                                    <Charts datasets={this.props.datasets}/>
                                 </Col>
                             </Row>
                             <Divider plain>Заповнення</Divider>
@@ -196,11 +196,39 @@ const getData = value => {
         ] };
 };
 
+const mapStateToDatasets = standardsState => {
+    const { selectedDate, standardTypes, data } = standardsState;
+    const selectedMonth = moment.months(selectedDate.month());
+    const datasets = standardTypes.map(item => {
+        const color = item.color;
+        const colorSettings = item.chart === 'bar' ? { backgroundColor: color} : {
+            borderColor: color,
+            backgroundColor: color,
+            pointBorderColor: color,
+            pointBackgroundColor: color,
+            pointHoverBackgroundColor: color,
+            pointHoverBorderColor: color,
+            fill: false,
+        };
+        return {
+            label: item.name,
+            type: item.chart,
+            data: data[selectedMonth].filter(data => data.type === item.name)
+                                     .map(data => ({x: data.date.date(), y: data.value})),
+            ...colorSettings,
+        };
+    });
+    const length = selectedDate.daysInMonth();
+    const labels = Array.from({length}, (x, i) => i + 1);
+    return { labels, datasets };
+};
+
 const mapStateToProps = state => {
     return {
         selectedDate: state.standards.selectedDate,
         data: state.standards.data,
         terms: state.standards.terms,
+        datasets: mapStateToDatasets(state.standards),
     };
 };
 

@@ -22,7 +22,6 @@ class StandardForm extends Component{
                     key: item.id || item.fakeId,
                     defaultValues: this.props.data[index],
                 }));
-            console.log(forms);
             this.setState({forms});
         }
     }
@@ -34,15 +33,21 @@ class StandardForm extends Component{
         this.setState({forms: newForms});
     };
 
-    removeForm = key => {
+    remove = key => {
         const forms = [...this.state.forms];
-        console.log(forms);
         const index = forms.findIndex(form => form.key === key);
+        const { id, date } = forms[index].defaultValues;
         if (index > -1) {
-            forms.splice(index, 1);
-            this.setState({forms});
+            if (id){
+                this.props.remove({id, fakeId: key, date: date || this.state.moment});
+            }
+            else {
+                forms.splice(index, 1);
+                this.setState({forms});
+            }
         }
     };
+
 
     render() {
         return (
@@ -54,7 +59,7 @@ class StandardForm extends Component{
                         id={form.key}
                         defaultValues={form.defaultValues}
                         isFetched={form.isFetched}
-                        remove={this.removeForm.bind(null, form.key)}
+                        remove={this.remove.bind(null, form.key)}
                         onTypeChange={this.props.onTypeChange}
                         addNewOption={this.props.addNewOption}
                         standardTypes={this.props.standardTypes}
