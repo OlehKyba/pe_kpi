@@ -87,12 +87,13 @@ class Home extends Component {
     };
 
     render() {
+        const isSpinning = this.props.readTemporaryStorage.some(item => item === this.state.moment.month());
         return (
             <Layout style={{ minHeight: '100vh' }}>
                 <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
                     <div className="logo" />
                     <Menu
-                        //defaultOpenKeys="months"
+                        defaultOpenKeys={[this.subMenuKeys.months.name]}
                         theme="dark"
                         defaultSelectedKeys={[this.getKey('months', moment.months(this.state.moment.month()))]}
                         mode="inline"
@@ -136,7 +137,7 @@ class Home extends Component {
                             <Divider plain>Графіки</Divider>
                             <Row justify="center" align="center">
                                 <Col span={24}>
-                                    <Spin spinning={this.props.readTemporaryStorage.some(item => item === this.state.moment.month())}>
+                                    <Spin spinning={isSpinning}>
                                         <Charts
                                             datasets={this.props.datasets}
                                         />
@@ -146,19 +147,21 @@ class Home extends Component {
                             <Divider plain>Заповнення</Divider>
                             <Row justify="center" align="center">
                                 <Col span={24}>
-                                    <ControlPanel
-                                        active={this.state.moment.date() - 1}
-                                        data={
-                                            Array.from({length: this.state.moment.daysInMonth()},
-                                                (item, index) => {
-                                                    const month = this.state.moment.month();
-                                                    const year = this.state.moment.year();
-                                                    const date = moment({ date: index + 1, month, year});
-                                                    const standards = mapDataToMoment(date, this.state.data);
-                                                    return [date, standards];
-                                                }
-                                            )}
-                                    />
+                                    <Spin spinning={isSpinning}>
+                                        <ControlPanel
+                                            active={this.state.moment.date() - 1}
+                                            data={
+                                                Array.from({length: this.state.moment.daysInMonth()},
+                                                    (item, index) => {
+                                                        const month = this.state.moment.month();
+                                                        const year = this.state.moment.year();
+                                                        const date = moment({ date: index + 1, month, year});
+                                                        const standards = mapDataToMoment(date, this.state.data);
+                                                        return [date, standards];
+                                                    }
+                                                )}
+                                        />
+                                    </Spin>
                                 </Col>
                             </Row>
                         </div>

@@ -12,7 +12,7 @@ import {
     DELETE_STANDARD_SUCCESS,
     DELETE_STANDARD_FAIL,
     CREATE_STANDARD_TYPE,
-    SELECT_MOMENT, REMOVE_STANDARD,
+    SELECT_MOMENT,
 } from './types';
 
 import { colors } from "../../colors";

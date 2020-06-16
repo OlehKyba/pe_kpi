@@ -15,14 +15,22 @@ class ControlPanel extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            active: props.active,
             name: '',
             data: this.props.data,
         };
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        const newState = {};
         if (this.props.data !== prevProps.data){
-            this.setState({data: this.props.data});
+            newState.data = this.props.data;
+        }
+        if (this.props.active !== prevProps.active){
+            newState.active = this.props.active;
+        }
+        if (Object.keys(newState).length > 0){
+            this.setState(newState);
         }
     }
 
@@ -51,7 +59,7 @@ class ControlPanel extends Component {
 
     render() {
         return (
-            <Collapse accordion defaultActiveKey={[this.props.active]}>
+            <Collapse accordion defaultActiveKey={[this.state.active]}>
                 { this.state.data.map((item, index) => {
                     const [date, data] = item;
                     return (
