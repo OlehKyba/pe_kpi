@@ -185,11 +185,24 @@ const mapStateToDatasets = standardsState => {
             pointHoverBorderColor: color,
             fill: false,
         };
+        let dataset = data[selectedMonth].filter(data => data.type === item.name)
+                                         .map(data => ({x: data.date.date(), y: data.value}))
+        if (item.chart === 'bar') {
+            dataset = dataset.reduce((unique, item) => {
+                const index = unique.findIndex(element => element.x === item.x);
+                if (index === -1){
+                    return [...unique, item];
+                }
+                else if (unique[index].y < item.y){
+                    unique.splice(index, 1, item);
+                }
+                return unique;
+            }, []);
+        }
         return {
             label: item.name,
             type: item.chart,
-            data: data[selectedMonth].filter(data => data.type === item.name)
-                                     .map(data => ({x: data.date.date(), y: data.value})),
+            data: dataset,
             ...colorSettings,
         };
     });

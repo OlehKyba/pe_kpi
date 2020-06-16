@@ -46,7 +46,6 @@ const generateStandardsByMonth = state => {
     });
 
     const randomDates = Array.from({length: 5}, () => getRandomInt(1, numberOfDays - 1))
-                             .reduce((unique, item) => unique.includes(item) ? unique : [...unique, item], [])
                              .sort()
                              .map(date => moment({year, month, date}));
 
