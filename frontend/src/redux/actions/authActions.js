@@ -17,6 +17,7 @@ import {
     RESET_PASSWORD,
     RESET_PASSWORD_SUCCESS,
     RESET_PASSWORD_FAIL,
+    LOGOUT,
 } from "./types";
 
 export function login({email, password}) {
@@ -86,5 +87,11 @@ export function resetPassword({ password, token }) {
             }
         })
     };
+}
+
+export function logout() {
+    return {
+        type: LOGOUT,
+    }
 }
 

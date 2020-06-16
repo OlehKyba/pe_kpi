@@ -13,6 +13,7 @@ import './index.css';
 import Charts from "./components/Charts";
 import ControlPanel from "./components/ControlPanel";
 import { readStandards, selectMoment } from "../../redux/actions/standardsActions";
+import {logout} from "../../redux/actions/authActions";
 
 const { Content, Sider, Footer } = Layout;
 const { SubMenu } = Menu;
@@ -84,6 +85,9 @@ class Home extends Component {
             const date = moment().year(year).month(newState.path[1]).date(1);
             newState.moment = date;
             this.props.selectMoment({moment: date});
+        }
+        else if(newState.path[0] === this.subMenuKeys.user.value){
+
         }
         this.setState(newState);
     };
@@ -167,7 +171,7 @@ class Home extends Component {
                             title={this.subMenuKeys.user.value}
                         >
                             <Menu.Item key={this.getKey('user', 'Інформація')}>Інформація</Menu.Item>
-                            <Menu.Item key={this.getKey('user', 'Вийти')}>Вийти</Menu.Item>
+                            <Menu.Item onClick={this.props.logout} key={this.getKey('user', 'Вийти')}>Вийти</Menu.Item>
                         </SubMenu>
                     </Menu>
                 </Sider>
@@ -242,4 +246,4 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps, { selectMoment, readStandards })(Home);
+export default connect(mapStateToProps, { selectMoment, readStandards, logout })(Home);
