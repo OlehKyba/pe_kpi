@@ -1,10 +1,32 @@
 import React from "react";
-import { Button, Divider, Form, Input, InputNumber, Select, Space } from "antd";
+import { Button, Divider, Form, Input, InputNumber, Select, Space, Alert } from "antd";
 import { MinusOutlined, PlusOutlined, UpOutlined } from "@ant-design/icons";
 import {connect} from "react-redux";
 
-
+const getErrorMessage = errorType => {
+    switch (errorType) {
+        default:
+            return 'Упс! Щось пішло не так, спробуйте ще раз.'
+    }
+};
 const ControlRow = props => {
+    const errors = Object.entries(props.errors).map(([key, {id, error}]) => {
+        let result = null;
+        if (id === props.id){
+            result = (
+                <Alert
+                    style={{marginBottom: '1rem'}}
+                    key={key}
+                    message="Помилка"
+                    description={getErrorMessage(key)}
+                    type="error"
+                    showIcon
+                    closable
+                />
+            );
+        }
+        return result;
+    });
 
     const createButton = (
         <Button
@@ -28,7 +50,7 @@ const ControlRow = props => {
             onFinish={props.onFinish}
             onFieldsChange={props.onChange}
         >
-            <Space style={{ display: 'flex', marginBottom: 8, justifyContent: 'center' }}
+            <Space style={{ display: 'flex', justifyContent: 'center' }}
                    align="start">
                 <Form.Item
                     initialValue={props.defaultValues ? props.defaultValues.type : null}
@@ -73,6 +95,7 @@ const ControlRow = props => {
 
                 { props.isFetched ? updateButton : createButton }
                 <Button
+                    loading={props.deleteTemporaryStorage.some(item => item === props.id)}
                     type="primary"
                     danger
                     shape="circle"
@@ -80,15 +103,21 @@ const ControlRow = props => {
                     onClick={props.remove}
                 />
             </Space>
+            { errors }
         </Form>
 
     );
 };
 
 const mapStateToProps = state => {
+    const errors = {...state.standards.errors};
+    delete errors.read;
+
     return {
         createTemporaryStorage: state.standards.createTemporaryStorage,
         updateTemporaryStorage: state.standards.updateTemporaryStorage,
+        deleteTemporaryStorage: state.standards.deleteTemporaryStorage,
+        errors,
     };
 };
 

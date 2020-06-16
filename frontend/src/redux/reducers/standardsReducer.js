@@ -18,6 +18,7 @@ import {
 
 import { colors } from "../../colors";
 
+/**
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r && 0x3 | 0x8);
@@ -71,7 +72,7 @@ const generateStandardsByMonth = state => {
                                                               .map(item => ({...item, date: item.date.toISOString()}));
     return { data };
 };
-
+ */
 
 const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4, 5]) => {
     const currentDate = date;
@@ -101,6 +102,8 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
     const createTemporaryStorage = [];
     const updateTemporaryStorage = [];
     const readTemporaryStorage = [];
+    const deleteTemporaryStorage = [];
+    const errors = {};
 
     return {
         currentDate,
@@ -111,6 +114,8 @@ const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4,
         createTemporaryStorage,
         updateTemporaryStorage,
         readTemporaryStorage,
+        deleteTemporaryStorage,
+        errors,
         defaultChart: 'line',
     };
 };
@@ -134,17 +139,17 @@ export const standardsReducer = (state=getInitState(), action) => {
             return {
                 ...state,
                 readTemporaryStorage,
+                errors: {},
             };
         }
         case READ_STANDARDS_SUCCESS:
-        case READ_STANDARDS_FAIL:
         {
-            const { data } = generateStandardsByMonth(state);
+            const { data } = action.result;
             const inSystemStandardTypes = state.standardTypes.map(item => item.name);
             const newStandardTypes = data.reduce((unique, item) =>
-                unique.includes(item.type) || inSystemStandardTypes.includes(item.type)
-                    ? unique
-                    : [...unique, item.type],
+                    unique.includes(item.type) || inSystemStandardTypes.includes(item.type)
+                        ? unique
+                        : [...unique, item.type],
                 [])
                 .map(name => ({name, color: colors.pop(), chart: state.defaultChart}));
             const standardTypes = [...state.standardTypes, ...newStandardTypes];
@@ -163,48 +168,70 @@ export const standardsReducer = (state=getInitState(), action) => {
                 readTemporaryStorage,
             };
         }
+        case READ_STANDARDS_FAIL:
+        {
+            const { month } = action.params;
+            const readTemporaryStorage = [...state.readTemporaryStorage];
+            const index = readTemporaryStorage.findIndex(item => item === month);
+            if (index !== -1){
+                readTemporaryStorage.splice(index, 1);
+            }
+            return {
+                ...state,
+                errors: {read: action.error},
+            };
+        }
         case CREATE_STANDARD:
             {
                 const standard = action.standard;
-                const month = moment.months(standard.date.month());
-                const newMonthDate = [...state.data[month], standard].sort((a, b) => a.date.diff(b.date));
                 return {
                     ...state,
-                    data: {...state.data, [month]: newMonthDate},
                     createTemporaryStorage: [standard.fakeId, ...state.createTemporaryStorage],
+                    errors: {},
                 };
             }
         case CREATE_STANDARD_SUCCESS:
+        {
+            const { standard, result } = action.standard;
+            const createTemporaryStorage = [...state.createTemporaryStorage];
+            const index = createTemporaryStorage.findIndex(item => item === standard.fakeId);
+            if (index !== -1){
+                createTemporaryStorage.splice(index, 1);
+            }
+            delete standard.fakeId;
+            standard.id = result.id;
+            const month = moment.months(standard.date.month());
+            const newMonthDate = [...state.data[month], standard].sort((a, b) => a.date.diff(b.date));
+            return {
+                ...state,
+                data: {...state.data, [month]: newMonthDate},
+                createTemporaryStorage,
+            };
+        }
         case CREATE_STANDARD_FAIL:
             {
-                const standard = action.standard;
-                const month = moment.months(standard.date.month());
-                const id = action.result || uuidv4();
-
                 const createTemporaryStorage = [...state.createTemporaryStorage];
-                const i = createTemporaryStorage.indexOf(standard.fakeId);
-                if (i > -1) {
-                    createTemporaryStorage.splice(i, 1);
-                }
-
-                const index = state.data[month].findIndex(item => item === standard);
+                const index = createTemporaryStorage.findIndex(item => item === action.standard.fakeId);
                 if (index !== -1){
-                    const refreshStandard = Object.assign({ id }, standard);
-                    delete refreshStandard.fakeId;
-                    const monthArray = [...state.data[month]];
-                    monthArray.splice(index, 1, refreshStandard);
-                    return {
-                        ...state,
-                        createTemporaryStorage,
-                        data: {...state.data, [month]: monthArray},
-                    };
+                    createTemporaryStorage.splice(index, 1);
                 }
                 return {
-                    ...state,
+                   ...state,
+                    errors: {create: action.error},
                     createTemporaryStorage,
                 };
             }
         case UPDATE_STANDARD:
+        {
+            const updatedStandard = action.standard;
+            const updateTemporaryStorage = [...state.updateTemporaryStorage, updatedStandard.id];
+            return {
+                ...state,
+                updateTemporaryStorage,
+                errors: {},
+            };
+        }
+        case UPDATE_STANDARD_SUCCESS:
         {
             const updatedStandard = action.standard;
             const month = moment.months(updatedStandard.date.month());
@@ -212,44 +239,73 @@ export const standardsReducer = (state=getInitState(), action) => {
             const index = state.data[month].findIndex(item => item.id === updatedStandard.id);
             const monthArray = [...state.data[month]];
             if (index !== -1){
-                updateTemporaryStorage.push(updatedStandard.id);
                 monthArray.splice(index, 1, updatedStandard);
+                const delIndex = updateTemporaryStorage.findIndex(item => item === updatedStandard.id);
+                updateTemporaryStorage.splice(delIndex, 1);
             }
             return {
                 ...state,
                 updateTemporaryStorage,
                 data: {...state.data, [month]: monthArray},
+                errors: {},
             };
         }
-        case UPDATE_STANDARD_SUCCESS:
         case UPDATE_STANDARD_FAIL:
         {
+            const { id } = action.standard;
+            const updateTemporaryStorage = [...state.updateTemporaryStorage];
+            const index = updateTemporaryStorage.findIndex(item => item === id);
+            if (index !== -1){
+                updateTemporaryStorage.splice(index, 1);
+            }
             return {
                 ...state,
-            }
+                errors: {update: {id: action.standard.id, error: action.error}},
+                updateTemporaryStorage,
+            };
         }
         case DELETE_STANDARD:
         {
-            const { id, date, fakeId } = action.standard;
+            const deleteTemporaryStorage = [...state.deleteTemporaryStorage, action.standard.id];
+            return {
+                ...state,
+                deleteTemporaryStorage,
+                errors: {},
+            };
+        }
+        case DELETE_STANDARD_SUCCESS:
+        {
+            const { id, date } = action.standard;
             const month = moment.months(date.month());
             const monthArray = [...state.data[month]];
-            const findById = item => item.id === id;
-            const findByFakeId = item => item.fakeId === fakeId;
-            const find = id ? findById : findByFakeId;
-            const index = monthArray.findIndex(find);
+            const deleteTemporaryStorage = [...state.deleteTemporaryStorage];
+            const index = monthArray.findIndex(item => item.id === id);
             if (index !== -1){
                 monthArray.splice(index, 1);
+                const delIndex = deleteTemporaryStorage.findIndex(item => item === id);
+                deleteTemporaryStorage.splice(delIndex, 1);
             }
             return {
                 ...state,
                 data: {...state.data, [month]: monthArray},
+                deleteTemporaryStorage,
+                errors: {},
             };
         }
-        case DELETE_STANDARD_SUCCESS:
         case DELETE_STANDARD_FAIL:
+        {
+            const { id } = action.standard;
+            const deleteTemporaryStorage = [...state.deleteTemporaryStorage];
+            const index = deleteTemporaryStorage.findIndex(item => item === id);
+            if (index !== -1){
+                deleteTemporaryStorage.splice(index, 1);
+            }
             return {
                 ...state,
-            }
+                errors: {delete: {id: action.standard.id, error: action.error}},
+                deleteTemporaryStorage,
+            };
+        }
         default:
             return {...state};
     }

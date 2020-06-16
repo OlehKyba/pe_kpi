@@ -88,9 +88,3 @@ export function resetPassword({ password, token }) {
     };
 }
 
-export function userFeatch() {
-    return {
-        types: ['USER', 'USER_SUCCESS', 'USER_FAIL'],
-        promise: client => client.get('/user/'),
-    };
-}

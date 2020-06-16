@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from 'react-redux';
 import moment from '../../moment';
 
-import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin } from 'antd';
+import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin, Result} from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -52,7 +52,8 @@ class Home extends Component {
 
     componentDidMount() {
         const month = this.state.moment.month();
-        this.props.readStandards({ month });
+        const year = this.state.moment.year();
+        this.props.readStandards({ month, year });
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -61,9 +62,10 @@ class Home extends Component {
         }
         if (this.props.selectedDate !== prevProps.selectedDate){
             const month = this.props.selectedDate.month();
+            const year = this.props.selectedDate.year();
             const monthName = moment.months(this.props.selectedDate.month());
             if (this.state.data[monthName].length === 0){
-                this.props.readStandards({month});
+                this.props.readStandards({month, year});
             }
         }
     }
@@ -88,6 +90,51 @@ class Home extends Component {
 
     render() {
         const isSpinning = this.props.readTemporaryStorage.some(item => item === this.state.moment.month());
+        const successLayout = (
+            <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
+                <Divider plain>Графіки</Divider>
+                <Row justify="center" align="center">
+                    <Col span={24}>
+                        <Spin spinning={isSpinning}>
+                            <Charts
+                                datasets={this.props.datasets}
+                            />
+                        </Spin>
+                    </Col>
+                </Row>
+                <Divider plain>Заповнення</Divider>
+                <Row justify="center" align="center">
+                    <Col span={24}>
+                        <Spin spinning={isSpinning}>
+                            <ControlPanel
+                                active={this.state.moment.date() - 1}
+                                data={
+                                    Array.from({length: this.state.moment.daysInMonth()},
+                                        (item, index) => {
+                                            const month = this.state.moment.month();
+                                            const year = this.state.moment.year();
+                                            const date = moment({ date: index + 1, month, year});
+                                            const standards = mapDataToMoment(date, this.state.data);
+                                            return [date, standards];
+                                        }
+                                    )}
+                            />
+                        </Spin>
+                    </Col>
+                </Row>
+            </div>
+        );
+
+        const errorLayout = (
+            <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
+                <Result
+                    status="500"
+                    title="Упс!"
+                    subTitle="Щось пішло не так :("
+                />
+            </div>
+        );
+
         return (
             <Layout style={{ minHeight: '100vh' }}>
                 <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
@@ -133,38 +180,7 @@ class Home extends Component {
                                 </Breadcrumb.Item>))
                             }
                         </Breadcrumb>
-                        <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
-                            <Divider plain>Графіки</Divider>
-                            <Row justify="center" align="center">
-                                <Col span={24}>
-                                    <Spin spinning={isSpinning}>
-                                        <Charts
-                                            datasets={this.props.datasets}
-                                        />
-                                    </Spin>
-                                </Col>
-                            </Row>
-                            <Divider plain>Заповнення</Divider>
-                            <Row justify="center" align="center">
-                                <Col span={24}>
-                                    <Spin spinning={isSpinning}>
-                                        <ControlPanel
-                                            active={this.state.moment.date() - 1}
-                                            data={
-                                                Array.from({length: this.state.moment.daysInMonth()},
-                                                    (item, index) => {
-                                                        const month = this.state.moment.month();
-                                                        const year = this.state.moment.year();
-                                                        const date = moment({ date: index + 1, month, year});
-                                                        const standards = mapDataToMoment(date, this.state.data);
-                                                        return [date, standards];
-                                                    }
-                                                )}
-                                        />
-                                    </Spin>
-                                </Col>
-                            </Row>
-                        </div>
+                        { this.props.readError ? errorLayout : successLayout }
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>KPI PE ©2020</Footer>
                 </Layout>
@@ -221,6 +237,7 @@ const mapStateToProps = state => {
         terms: state.standards.terms,
         datasets: mapStateToDatasets(state.standards),
         readTemporaryStorage: state.standards.readTemporaryStorage,
+        readError: state.standards.errors.read,
     };
 };
 

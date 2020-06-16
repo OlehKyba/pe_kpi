@@ -17,15 +17,13 @@ import {
 
 import { colors } from "../../colors";
 
-export function readStandards({ month }) {
+export function readStandards(params) {
     return {
         types: [READ_STANDARDS, READ_STANDARDS_SUCCESS, READ_STANDARDS_FAIL],
         promise: client => client.get('/standards/', {
-            params: {
-                month
-            },
+            params,
         }),
-        params: { month },
+        params: params,
     };
 }
 

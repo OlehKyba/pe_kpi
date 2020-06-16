@@ -18,6 +18,7 @@ class ControlPanel extends Component {
             active: props.active,
             name: '',
             data: this.props.data,
+            errors: this.props.errors,
         };
     }
 
@@ -28,6 +29,9 @@ class ControlPanel extends Component {
         }
         if (this.props.active !== prevProps.active){
             newState.active = this.props.active;
+        }
+        if (this.props.errors !== prevProps.errors){
+            newState.errors = this.props.errors;
         }
         if (Object.keys(newState).length > 0){
             this.setState(newState);
