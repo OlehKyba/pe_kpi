@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from 'react-redux';
 import moment from '../../moment';
 
-import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin, Result} from 'antd';
+import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin, Result, Form, Input, Button} from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -127,6 +127,85 @@ class Home extends Component {
                     </Col>
                 </Row>
             </div>
+        );
+
+        const userDetailsLayout = (
+            <Form
+                initialValues={{
+                    name: 'Олег',
+                    surname: 'Киба',
+                    patronymic: 'Дмитрович',
+                    group: 'ІВ-72',
+                    club: 'Важка атлетика',
+                }}
+            >
+                <Form.Item
+                    name="name"
+                    label="Ім'я"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Це поле не може бути пустим!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    name="surname"
+                    label="Прізвище"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Це поле не може бути пустим!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    name="patronymic"
+                    label="Прізвище"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Це поле не може бути пустим!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    name="group"
+                    label="Група"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Це поле не може бути пустим!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    name="club"
+                    label="Спортивна секція"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Це поле не може бути пустим!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+
+                <Button block ype="primary" htmlType="submit">Оновити данні</Button>
+            </Form>
         );
 
         const errorLayout = (

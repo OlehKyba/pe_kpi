@@ -55,7 +55,7 @@ class ChangePasswordPage extends Component {
         subtitle: "Вітаємо! Ви змінили пароль.",
         extra: () => (
             <Link to='/sign-in'>
-                <Button danger>
+                <Button>
                     До Входу
                 </Button>
             </Link>),

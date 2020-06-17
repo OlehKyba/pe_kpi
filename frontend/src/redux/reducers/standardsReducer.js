@@ -76,11 +76,16 @@ const generateStandardsByMonth = state => {
 
 const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4, 5]) => {
     const currentDate = date;
-    const selectedDate = date;
+    let selectedDate = date;
 
     const currentYear = date.year();
     const currentMonth = date.month();
+
     const terms = currentMonth > 7 ? [currentYear, currentYear + 1] : [currentYear - 1, currentYear];
+
+    if([6, 7].includes(currentMonth)){
+        selectedDate = moment({year: terms[0], month: 8, date: 1});
+    }
 
     const standardTypes = [
         {

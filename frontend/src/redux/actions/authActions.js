@@ -23,7 +23,7 @@ import {
 export function login({email, password}) {
     return {
         types: [LOGIN, LOGIN_SUCCESS, LOGIN_FAIL],
-        promise: client => client.post('/auth/sing-in', {
+        promise: client => client.post('/auth/sign-in', {
             data: {
                 email,
                 password,
@@ -32,13 +32,17 @@ export function login({email, password}) {
     };
 }
 
-export function registration({email, password}) {
+export function registration({email, password, name, surname, group, club}) {
     return {
         types: [REGISTER, REGISTER_SUCCESS, REGISTER_FAIL],
-        promise: client => client.post('/auth/sing-up', {
+        promise: client => client.post('/auth/sign-up', {
             data: {
                 email,
                 password,
+                name,
+                surname,
+                group,
+                club,
             }
         })
     };

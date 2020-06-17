@@ -3,7 +3,15 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 
 import { Form, Input, Button, Result, Alert, Spin } from 'antd';
-import { MailOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
+import {
+    MailOutlined,
+    LockOutlined,
+    UnlockOutlined,
+    UserOutlined,
+    TeamOutlined,
+    BlockOutlined,
+    DribbbleOutlined,
+} from '@ant-design/icons';
 
 import { registration } from "../../../../redux/actions/authActions";
 
@@ -24,7 +32,7 @@ class RegistrationForm extends Component {
     }
 
     onSubmit = data => {
-        const user = { email: data.email, password: data.password };
+        const {confirm, ...user} = data;
         this.props.registration(user);
     };
 
@@ -82,6 +90,71 @@ class RegistrationForm extends Component {
                                 placeholder="E-mail"
                             />
                         </Form.Item>
+
+                        <Form.Item
+                            hasFeedback
+                            name="name"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Це поле не може бути пустим!',
+                                },
+                            ]}
+                        >
+                            <Input
+                                prefix={<UserOutlined className="site-form-item-icon"/>}
+                                placeholder="Ім'я"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            hasFeedback
+                            name="surname"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Це поле не може бути пустим!',
+                                },
+                            ]}
+                        >
+                            <Input
+                                prefix={<TeamOutlined className="site-form-item-icon"/>}
+                                placeholder="Прізвище"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            hasFeedback
+                            name="group"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Це поле не може бути пустим!',
+                                },
+                            ]}
+                        >
+                            <Input
+                                prefix={<BlockOutlined />}
+                                placeholder="Група"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            hasFeedback
+                            name="club"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Це поле не може бути пустим!',
+                                },
+                            ]}
+                        >
+                            <Input
+                                prefix={<DribbbleOutlined />}
+                                placeholder="Спортивна секція"
+                            />
+                        </Form.Item>
+
                         <Form.Item
                             name="password"
                             rules={[
@@ -125,7 +198,7 @@ class RegistrationForm extends Component {
                         </Form.Item>
 
                         <Form.Item>
-                            <Button htmlType="submit" className="login-form-button">
+                            <Button htmlType="submit" type="primary" className="login-form-button">
                                 Зареєструватися
                             </Button>
                         </Form.Item>
