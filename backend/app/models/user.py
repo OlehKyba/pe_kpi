@@ -14,7 +14,7 @@ class UserStatus(Enum):
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(GUID, default=uuid4, unique=True)
+    public_id = db.Column(GUID, default=uuid4, unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     status = db.Column(db.Enum(UserStatus), nullable=False, default=UserStatus.email_is_not_verified)
@@ -22,6 +22,12 @@ class User(db.Model):
     surname = db.Column(db.String(100), nullable=False, default="Anonymous")
     group = db.Column(db.String(100), nullable=False, default="Anonymous")
     club = db.Column(db.String(100), nullable=False, default="Anonymous")
+
+    standards = db.relationship('Standard',
+                                lazy='dynamic',
+                                cascade='all,delete',
+                                backref=db.backref('user', lazy='subquery'),
+                                )
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
