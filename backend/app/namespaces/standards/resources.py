@@ -1,4 +1,5 @@
-from datetime import datetime
+from flask import request
+from datetime import datetime, timezone
 from flask_restplus import Resource, marshal
 from flask_jwt_extended import jwt_required, get_current_user
 
@@ -14,7 +15,7 @@ get_parser = get_standards_parser()
 update_parser = update_standard_parser()
 
 
-@standards_api.route('/standards')
+@standards_api.route('/')
 class StandardsResource(Resource):
 
     MESSAGE_409 = 'Invalid query params'

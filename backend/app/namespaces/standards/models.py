@@ -15,7 +15,7 @@ create_standard_res = standards_api.model('CreateStandardResponse', {
 
 update_standard_req = standards_api.model('UpdateStandardRequest', {
     'type': String(max_length=100, default=None),
-    'date': DateTime(default=None),
+    'date': DateTime(default=None, dt_format='iso8601'),
     'value': Float(min=0, default=None),
 })
 

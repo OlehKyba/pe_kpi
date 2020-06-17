@@ -18,62 +18,6 @@ import {
 
 import { colors } from "../../colors";
 
-/**
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r && 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-const generateStandardsByMonth = state => {
-    const { selectedDate } = state;
-    const numberOfDays = selectedDate.daysInMonth();
-    const year = selectedDate.year();
-    const month = selectedDate.month();
-    const heartbeats = Array.from({length: numberOfDays}, (item, index) => {
-        return {
-            id: uuidv4(),
-            type: 'Пульс',
-            date: moment({year, month, date: index + 1}),
-            value: getRandomInt(60, 100),
-        };
-    });
-
-    const randomDates = Array.from({length: 5}, () => getRandomInt(1, numberOfDays - 1))
-                             .sort()
-                             .map(date => moment({year, month, date}));
-
-    const selfAwareness = randomDates.map(date => {
-        return {
-            date,
-            id: uuidv4(),
-            type: 'Самовідчуття',
-            value: getRandomInt(1, 5),
-        };
-    });
-
-    const pullUps = randomDates.map(date => {
-        return {
-            date,
-            id: uuidv4(),
-            type: 'Підтягування',
-            value: getRandomInt(1, 10),
-        };
-    });
-
-    const data = [...heartbeats, ...selfAwareness, ...pullUps].sort((a, b) => a.date.diff(b.date))
-                                                              .map(item => ({...item, date: item.date.toISOString()}));
-    return { data };
-};
- */
-
 const getInitState = (date=moment(), workingMonths=[8, 9, 10, 11, 0, 1, 2, 3, 4, 5]) => {
     const currentDate = date;
     let selectedDate = date;
@@ -160,7 +104,7 @@ export const standardsReducer = (state=getInitState(), action) => {
             const standardTypes = [...state.standardTypes, ...newStandardTypes];
             data.forEach(item => (item.date = moment(item.date)));
             const { month } = action.params;
-            const monthName = moment.months(month);
+            const monthName = moment.months(month - 1);
             const readTemporaryStorage = [...state.readTemporaryStorage];
             const index = readTemporaryStorage.findIndex(item => item === month);
             if (index !== -1){
@@ -189,15 +133,18 @@ export const standardsReducer = (state=getInitState(), action) => {
         case CREATE_STANDARD:
             {
                 const standard = action.standard;
+                const month = moment.months(standard.date.month());
+                const newMonthDate = [...state.data[month], standard].sort((a, b) => a.date.diff(b.date));
                 return {
                     ...state,
                     createTemporaryStorage: [standard.fakeId, ...state.createTemporaryStorage],
+                    data: {...state.data, [month]: newMonthDate},
                     errors: {},
                 };
             }
         case CREATE_STANDARD_SUCCESS:
         {
-            const { standard, result } = action.standard;
+            const { standard, result } = action;
             const createTemporaryStorage = [...state.createTemporaryStorage];
             const index = createTemporaryStorage.findIndex(item => item === standard.fakeId);
             if (index !== -1){
@@ -205,11 +152,8 @@ export const standardsReducer = (state=getInitState(), action) => {
             }
             delete standard.fakeId;
             standard.id = result.id;
-            const month = moment.months(standard.date.month());
-            const newMonthDate = [...state.data[month], standard].sort((a, b) => a.date.diff(b.date));
             return {
                 ...state,
-                data: {...state.data, [month]: newMonthDate},
                 createTemporaryStorage,
             };
         }

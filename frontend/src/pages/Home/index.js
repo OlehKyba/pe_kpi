@@ -52,7 +52,7 @@ class Home extends Component {
     }
 
     componentDidMount() {
-        const month = this.state.moment.month();
+        const month = this.state.moment.month() + 1;
         const year = this.state.moment.year();
         this.props.readStandards({ month, year });
     }
@@ -62,11 +62,12 @@ class Home extends Component {
             this.setState({data: this.props.data});
         }
         if (this.props.selectedDate !== prevProps.selectedDate){
-            const month = this.props.selectedDate.month();
+            let month = this.props.selectedDate.month();
+            const monthName = moment.months(month);
+            const thunkedMonth = month + 1;
             const year = this.props.selectedDate.year();
-            const monthName = moment.months(this.props.selectedDate.month());
             if (this.state.data[monthName].length === 0){
-                this.props.readStandards({month, year});
+                this.props.readStandards({month: thunkedMonth, year});
             }
         }
     }
@@ -93,7 +94,7 @@ class Home extends Component {
     };
 
     render() {
-        const isSpinning = this.props.readTemporaryStorage.some(item => item === this.state.moment.month());
+        const isSpinning = this.props.readTemporaryStorage.length > 0;
         const successLayout = (
             <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
                 <Divider plain>Графіки</Divider>
