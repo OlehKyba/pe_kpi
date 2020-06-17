@@ -157,20 +157,6 @@ export const authReducer = (state = initialState, action) =>{
                 isResetPasswordReqComplete: true,
                 resetPasswordError: action.error,
             };
-        case 'USER':
-            return {
-                ...state,
-            };
-        case 'USER_SUCCESS':
-            return {
-                ...state,
-                userData: action.data,
-            }
-        case 'USER_FAIL':
-            return {
-                ...state,
-                userError: action.error,
-            };
         default:
             return state;
     }

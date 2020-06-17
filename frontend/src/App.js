@@ -7,7 +7,6 @@ import Home from "./pages/Home";
 
 
 const App = props => {
-    console.log(props);
     return (
         <div className="wrapper">
             <Switch>

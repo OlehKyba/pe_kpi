@@ -16,7 +16,8 @@ from .models import (
     default_res,
     sign_up_res,
     sign_in_res,
-    sign_req,
+    sign_up_req,
+    sign_in_req,
     forgot_password_req,
     reset_password_req,
     refresh_req,
@@ -114,6 +115,7 @@ class RetrySendEmail(Resource):
     @auth_api.expect(retry_confirm_email_req, validate=True)
     @auth_api.marshal_with(default_res)
     def post(self):
+        """Endpoint for retry confirming user email."""
         user_data = auth_api.payload
         user = User.query.filter_by(email=user_data['email']).first()
 
@@ -132,7 +134,7 @@ class RetrySendEmail(Resource):
         return {'msg': self.MESSAGE_202}, 202
 
 
-@auth_api.route('/sing-up')
+@auth_api.route('/sign-up')
 class SingUpResource(Resource):
 
     MESSAGE_201 = 'User successfully created.'
@@ -140,7 +142,7 @@ class SingUpResource(Resource):
 
     @auth_api.response(201, MESSAGE_201, model=sign_up_res)
     @auth_api.response(409, MESSAGE_409, model=default_res)
-    @auth_api.expect(sign_req, validate=True)
+    @auth_api.expect(sign_up_req, validate=True)
     def post(self):
         """User Sign up view"""
         new_user = auth_api.payload
@@ -162,7 +164,7 @@ class SingUpResource(Resource):
         return marshal({'msg': self.MESSAGE_201, 'public_id': str(user.public_id)}, sign_up_res), 201
 
 
-@auth_api.route('/sing-in')
+@auth_api.route('/sign-in')
 class SingInResource(Resource):
 
     MESSAGE_404 = 'User not found!'
@@ -174,7 +176,7 @@ class SingInResource(Resource):
     @auth_api.response(403, MESSAGE_403, model=default_res)
     @auth_api.response(401, MESSAGE_401, model=default_res)
     @auth_api.response(200, MESSAGE_200, model=sign_in_res)
-    @auth_api.expect(sign_req, validate=True)
+    @auth_api.expect(sign_in_req, validate=True)
     def post(self):
         """User Sign in view"""
         user_data = auth_api.payload
@@ -281,7 +283,7 @@ class ResetPasswordResource(Resource):
         return {'msg': self.MESSAGE_200}, 200
 
 
-@auth_api.route('/sing-out')
+@auth_api.route('/sign-out')
 class SingOutResource(Resource):
 
     MESSAGE_404 = 'User not found!'

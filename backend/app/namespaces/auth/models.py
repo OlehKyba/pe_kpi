@@ -10,7 +10,16 @@ retry_confirm_email_req = auth_api.model('RetrySendEmailRequest', {
     'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
 })
 
-sign_req = auth_api.model('SingRequest', {
+sign_up_req = auth_api.model('SingRequest', {
+    'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
+    'password': String(required=True),
+    'name': String(required=True, max_length=100),
+    'surname': String(required=True, max_length=100),
+    'group': String(required=True, max_length=100),
+    'club': String(required=True, max_length=100),
+})
+
+sign_in_req = auth_api.model('SignInRequest', {
     'email': String(pattern=r'\S+@\S+\.\S+', example='templates@domain.com', required=True),
     'password': String(required=True),
 })

@@ -46,7 +46,7 @@ const onSuccessMessage = () => ({
     subtitle: "Вітаємо! Ви підтвердили вашу електронну пошту.",
     extra: () => (
     <Link to='/sign-in'>
-        <Button danger>
+        <Button>
             До Входу
         </Button>
     </Link>),
