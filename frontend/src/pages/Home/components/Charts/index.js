@@ -4,8 +4,9 @@ import {Bar} from "react-chartjs-2";
 const Charts = props => {
     return (
         <Bar
-        data={props.datasets}
-        options={{
+            height={300}
+            data={props.datasets}
+            options={{
             maintainAspectRatio: false,
             scales: {
                 yAxes: [{

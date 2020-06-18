@@ -46,7 +46,7 @@ class Home extends Component {
             data: props.data,
             terms: props.terms,
             moment: props.selectedDate,
-            collapsed: false,
+            collapsed: true,
             path: [this.subMenuKeys.months.value, moment.months(props.selectedDate.month())],
         }
     }
@@ -96,7 +96,7 @@ class Home extends Component {
     render() {
         const isSpinning = this.props.readTemporaryStorage.length > 0;
         const successLayout = (
-            <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
+            <div className="site-layout-background" style={{ padding: 24, height: '385px' }}>
                 <Divider plain>Графіки</Divider>
                 <Row justify="center" align="center">
                     <Col span={24}>
@@ -224,7 +224,7 @@ class Home extends Component {
                 <Sider collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
                     <div className="logo" />
                     <Menu
-                        defaultOpenKeys={[this.subMenuKeys.months.name]}
+                        //defaultOpenKeys={[this.subMenuKeys.months.name]}
                         theme="dark"
                         defaultSelectedKeys={[this.getKey('months', moment.months(this.state.moment.month()))]}
                         mode="inline"

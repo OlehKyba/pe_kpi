@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Divider, Form, Input, InputNumber, Select, Space, Alert } from "antd";
+import {Button, Divider, Form, Input, InputNumber, Select, Space, Alert, Col, Row} from "antd";
 import { MinusOutlined, PlusOutlined, UpOutlined } from "@ant-design/icons";
 import {connect} from "react-redux";
 
@@ -50,58 +50,67 @@ const ControlRow = props => {
             onFinish={props.onFinish}
             onFieldsChange={props.onChange}
         >
-            <Space style={{ display: 'flex', justifyContent: 'center' }}
+            <Space size='large'
+                   style={{ display: 'flex', justifyContent: 'center' }}
                    align="start">
-                <Form.Item
-                    initialValue={props.defaultValues ? props.defaultValues.type : null}
-                    name='type'
-                    fieldKey='type'
-                    rules={[{ required: true, message: 'Ви маєте вибрати тип!' }]}
-                >
-                    <Select
-                        style={{ width: 240 }}
-                        placeholder="Оберіть тип нормативу"
-                        dropdownRender={menu => (
-                            <div>
-                                {menu}
-                                <Divider style={{ margin: '4px 0' }} />
-                                <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
-                                    <Input style={{ flex: 'auto' }} onChange={props.onTypeChange}/>
-                                    <Button
-                                        type="link"
-                                        style={{ flex: 'none', padding: '8px', display: 'block', cursor: 'pointer' }}
-                                        onClick={props.addNewOption}
-                                    >
-                                        <PlusOutlined /> Add item
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    >
-                        {props.standardTypes.map(item => (
-                            <Select.Option value={item} key={item}>{item}</Select.Option>
-                        ))}
-                    </Select>
-                </Form.Item>
+                    <Row gutter={{ xs: 8, sm: 16, md: 24 }}>
+                        <Col sm flex={'auto'}>
+                            <Form.Item
+                                initialValue={props.defaultValues ? props.defaultValues.type : null}
+                                name='type'
+                                fieldKey='type'
+                                rules={[{ required: true, message: 'Ви маєте вибрати тип!' }]}
+                            >
+                                <Select
+                                    style={{ width: '100%', minWidth: 200 }}
+                                    placeholder="Оберіть тип нормативу"
+                                    dropdownRender={menu => (
+                                        <div>
+                                            {menu}
+                                            <Divider style={{ margin: '4px 0' }} />
+                                            <div style={{ display: 'flex', flexWrap: 'nowrap', padding: 8 }}>
+                                                <Input style={{ flex: 'auto' }} onChange={props.onTypeChange}/>
+                                                <Button
+                                                    type="link"
+                                                    style={{ flex: 'none', padding: '8px', display: 'block', cursor: 'pointer' }}
+                                                    onClick={props.addNewOption}
+                                                >
+                                                    <PlusOutlined /> Add item
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                >
+                                    {props.standardTypes.map(item => (
+                                        <Select.Option value={item} key={item}>{item}</Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
 
-                <Form.Item
-                    initialValue={props.defaultValues ? props.defaultValues.value : null}
-                    name='value'
-                    fieldKey='value'
-                    rules={[{ required: true, message: 'Заповніть значення!' }]}
-                >
-                    <InputNumber min={0} step={0.1} />
-                </Form.Item>
+                        <Col sm flex={'auto'}>
+                            <Form.Item
+                                initialValue={props.defaultValues ? props.defaultValues.value : null}
+                                name='value'
+                                fieldKey='value'
+                                rules={[{ required: true, message: 'Заповніть значення!' }]}
+                            >
+                                <InputNumber min={0} step={0.1} />
+                            </Form.Item>
+                        </Col>
 
-                { props.isFetched ? updateButton : createButton }
-                <Button
-                    loading={props.deleteTemporaryStorage.some(item => item === props.id)}
-                    type="primary"
-                    danger
-                    shape="circle"
-                    icon={<MinusOutlined />}
-                    onClick={props.remove}
-                />
+                        <Col sm flex={'auto'} style={{paddingBottom: '1rem'}}>
+                            { props.isFetched ? updateButton : createButton }
+                            <Button
+                                loading={props.deleteTemporaryStorage.some(item => item === props.id)}
+                                type="primary"
+                                danger
+                                shape="circle"
+                                icon={<MinusOutlined />}
+                                onClick={props.remove}
+                            />
+                        </Col>
+                    </Row>
             </Space>
             { errors }
         </Form>
