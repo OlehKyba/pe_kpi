@@ -128,6 +128,7 @@ export const standardsReducer = (state=getInitState(), action) => {
             return {
                 ...state,
                 errors: {read: action.error},
+                readTemporaryStorage,
             };
         }
         case CREATE_STANDARD:

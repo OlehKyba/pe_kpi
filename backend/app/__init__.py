@@ -2,6 +2,7 @@ from flask import Flask, Blueprint, has_app_context
 from redis import Redis, BlockingConnectionPool
 from .extentions import api, migrate, db, cors, jwt, mail, celery
 from .namespaces import namespaces
+from .commands import commands
 from .storage import refresh_tokens, email_confirm_tokens, change_password_tokens, access_tokens_blacklist
 from .namespaces.auth.jwt_helpers import check_if_token_in_blacklist, user_loader, user_error_loader
 
@@ -32,6 +33,10 @@ def create_app(config='app.configs.DevConfig', redis=None):
     app.register_blueprint(api_bp, url_prefix=app.config['API_PREFIX'])
 
     register_jwt(jwt)
+
+    for c in commands:
+        app.cli.add_command(c)
+
     return app
 
 
