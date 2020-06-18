@@ -65,5 +65,5 @@ def register_jwt(jwt):
         return user_loader(public_id)
 
     @jwt.user_loader_error_loader
-    def load_error_user():
+    def load_error_user(public_id):
         return user_error_loader()

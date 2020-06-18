@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Button } from "antd";
+import {Button, Col, Row} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
 import ControlRow from "./ControlRow";
@@ -51,19 +51,24 @@ class StandardForm extends Component{
 
     render() {
         return (
-            <div>
+            <Row>
                 {this.state.forms.map(form => (
-                    <ControlRow
-                        onFinish={this.props.onFinish.bind(null, form.key, form.isFetched)}
+                    <Col
+                        span={24}
                         key={form.key}
-                        id={form.key}
-                        defaultValues={form.defaultValues}
-                        isFetched={form.isFetched}
-                        remove={this.remove.bind(null, form.key)}
-                        onTypeChange={this.props.onTypeChange}
-                        addNewOption={this.props.addNewOption}
-                        standardTypes={this.props.standardTypes}
-                    />
+                    >
+                        <ControlRow
+                            onFinish={this.props.onFinish.bind(null, form.key, form.isFetched)}
+                            key={form.key}
+                            id={form.key}
+                            defaultValues={form.defaultValues}
+                            isFetched={form.isFetched}
+                            remove={this.remove.bind(null, form.key)}
+                            onTypeChange={this.props.onTypeChange}
+                            addNewOption={this.props.addNewOption}
+                            standardTypes={this.props.standardTypes}
+                        />
+                    </Col>
                 ))}
 
                 <Button
@@ -73,7 +78,7 @@ class StandardForm extends Component{
                 >
                     <PlusOutlined /> Додати
                 </Button>
-            </div>
+            </Row>
         );
     }
 }

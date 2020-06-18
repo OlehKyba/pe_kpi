@@ -30,7 +30,7 @@ export function readStandards(params) {
 export function createStandard({ fakeId, type, date, value }) {
     return {
         types: [CREATE_STANDARD, CREATE_STANDARD_SUCCESS, CREATE_STANDARD_FAIL],
-        promise: client => client.post('/standards', {
+        promise: client => client.post('/standards/', {
             data: {
                 type,
                 value,
