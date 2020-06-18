@@ -2,6 +2,7 @@ import { SET_TOKENS, LOGOUT } from "../actions/types";
 
 
 const needRefreshMessage = 'Token has expired';
+const afterUserDelMessage = 'User not found';
 
 
 export function requestMiddleware(client, setTokensType=SET_TOKENS, logoutType=LOGOUT) {
@@ -35,6 +36,9 @@ export function requestMiddleware(client, setTokensType=SET_TOKENS, logoutType=L
                             return Promise.resolve(result);
                         })
                         .catch(error => next({...rest, error, type: logoutType}));
+                }
+                else if (error.code === 404 && error.body.msg === afterUserDelMessage && accessToken){
+                   return next({...rest, error, type: logoutType});
                 }
                 return next({...rest, error, type: FAILURE});
             }

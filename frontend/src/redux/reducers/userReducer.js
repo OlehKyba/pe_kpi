@@ -15,6 +15,8 @@ const initState = {
         error: null,
         isReading: false,
         isUpdating: false,
+        isDeleting: false,
+        isShouldLogout: false,
 };
 
 export const userReducer = (state=initState, action) => {
@@ -57,6 +59,25 @@ export const userReducer = (state=initState, action) => {
                 isUpdating: false,
                 error: action.error
             };
+        case DELETE_USER:
+            return {
+                ...state,
+                isDeleting: true,
+            };
+        case DELETE_USER_SUCCESS:
+            return {
+                ...state,
+                isDeleting: false,
+                isShouldLogout: true,
+                user: {},
+            };
+        case DElETE_USER_FAIL:
+            return {
+                ...state,
+                isDeleting: false,
+                error: action.error,
+            };
+
         default:
             return {
                 ...state,

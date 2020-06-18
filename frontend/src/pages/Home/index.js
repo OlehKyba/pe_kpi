@@ -15,7 +15,7 @@ import ControlPanel from "./components/ControlPanel";
 import UserForm from "./components/UserForm";
 import { readStandards, selectMoment } from "../../redux/actions/standardsActions";
 import { logout } from "../../redux/actions/authActions";
-import { getUserData, updateUserData } from "../../redux/actions/userActions";
+import { getUserData, updateUserData, deleteUser } from "../../redux/actions/userActions";
 
 const { Content, Sider, Footer } = Layout;
 const { SubMenu } = Menu;
@@ -88,6 +88,10 @@ class Home extends Component {
        this.props.updateUserData(data);
     };
 
+    onUserDelete = () => {
+        this.props.deleteUser();
+    };
+
     onCollapse = collapsed => {
         this.setState({ collapsed });
     };
@@ -152,7 +156,7 @@ class Home extends Component {
                 <UserForm
                     initialValues={this.state.user}
                     onFinish={this.onUserDataUpdate}
-                    removeUser={null}
+                    removeUser={this.onUserDelete}
                 />
             </Spin>
         );
@@ -274,9 +278,16 @@ const mapStateToProps = state => {
         readError: state.standards.errors.read,
         userError: state.users.error,
         user: state.users.user,
-        isUserInProcess: state.users.isReading || state.users.isUpdating,
+        isUserInProcess: state.users.isReading || state.users.isUpdating || state.users.isDeleting,
     };
 };
 
 
-export default connect(mapStateToProps, { selectMoment, readStandards, logout, getUserData, updateUserData })(Home);
+export default connect(mapStateToProps, {
+    selectMoment,
+    readStandards,
+    logout,
+    getUserData,
+    updateUserData,
+    deleteUser
+})(Home);
