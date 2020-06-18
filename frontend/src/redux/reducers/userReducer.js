@@ -14,6 +14,7 @@ const initState = {
         user: {},
         error: null,
         isReading: false,
+        isUpdating: false,
 };
 
 export const userReducer = (state=initState, action) => {
@@ -34,6 +35,27 @@ export const userReducer = (state=initState, action) => {
                 ...state,
                 error: action.error,
                 isReading: false,
+            };
+        case UPDATE_USER_DATA:
+            return {
+                ...state,
+                isUpdating: true,
+            };
+        case UPDATE_USER_DATA_SUCCESS:
+        {
+            const newUserData = action.user;
+            const user = {...state.user, ...newUserData};
+            return {
+                ...state,
+                isUpdating: false,
+                user,
+            };
+        }
+        case UPDATE_USER_DATA_FAIL:
+            return {
+                ...state,
+                isUpdating: false,
+                error: action.error
             };
         default:
             return {

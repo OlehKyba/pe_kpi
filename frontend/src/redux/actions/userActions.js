@@ -19,16 +19,13 @@ export function getUserData() {
 }
 
 export function updateUserData({name, surname, group, club}) {
+    const user = { name, surname, group, club };
     return {
         types: [UPDATE_USER_DATA, UPDATE_USER_DATA_SUCCESS, UPDATE_USER_DATA_FAIL],
         promise: client => client.put('/users/', {
-            data: {
-                name,
-                surname,
-                group,
-                club,
-            },
-        })
+            data: user,
+        }),
+        user,
     };
 }
 

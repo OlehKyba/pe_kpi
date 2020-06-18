@@ -15,7 +15,7 @@ import ControlPanel from "./components/ControlPanel";
 import UserForm from "./components/UserForm";
 import { readStandards, selectMoment } from "../../redux/actions/standardsActions";
 import { logout } from "../../redux/actions/authActions";
-import { getUserData } from "../../redux/actions/userActions";
+import { getUserData, updateUserData } from "../../redux/actions/userActions";
 
 const { Content, Sider, Footer } = Layout;
 const { SubMenu } = Menu;
@@ -84,6 +84,9 @@ class Home extends Component {
         }
     }
 
+    onUserDataUpdate = data => {
+       this.props.updateUserData(data);
+    };
 
     onCollapse = collapsed => {
         this.setState({ collapsed });
@@ -100,7 +103,9 @@ class Home extends Component {
             this.props.selectMoment({moment: date});
         }
         else if(newState.path[0] === this.subMenuKeys.user.value){
-            this.props.getUserData();
+            if (Object.keys(this.state.user).length < 1){
+                this.props.getUserData();
+            }
         }
         this.setState(newState);
     };
@@ -146,7 +151,7 @@ class Home extends Component {
             <Spin spinning={this.state.isUserInProcess}>
                 <UserForm
                     initialValues={this.state.user}
-                    onFinish={null}
+                    onFinish={this.onUserDataUpdate}
                     removeUser={null}
                 />
             </Spin>
@@ -209,7 +214,7 @@ class Home extends Component {
                                 </Breadcrumb.Item>))
                             }
                         </Breadcrumb>
-                        { this.props.readError ? errorLayout : successLayout }
+                        { this.props.readError || this.props.userError ? errorLayout : successLayout }
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>KPI PE ©2020</Footer>
                 </Layout>
@@ -269,9 +274,9 @@ const mapStateToProps = state => {
         readError: state.standards.errors.read,
         userError: state.users.error,
         user: state.users.user,
-        isUserInProcess: state.users.isReading,
+        isUserInProcess: state.users.isReading || state.users.isUpdating,
     };
 };
 
 
-export default connect(mapStateToProps, { selectMoment, readStandards, logout, getUserData, })(Home);
+export default connect(mapStateToProps, { selectMoment, readStandards, logout, getUserData, updateUserData })(Home);
