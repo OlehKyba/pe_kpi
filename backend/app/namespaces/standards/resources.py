@@ -1,5 +1,5 @@
-from flask import request
-from datetime import datetime, timezone
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from flask_restplus import Resource, marshal
 from flask_jwt_extended import jwt_required, get_current_user
 
@@ -36,19 +36,25 @@ class StandardsResource(Resource):
             if not month or not year:
                 return {'msg': self.MESSAGE_409}, 409
 
-            start_date = {'day': day, 'month': month,'year': year}
-            finish_date = {'day': day + 1, 'month': month, 'year': year}
+            relative_delta = relativedelta(day=1)
+            if (datetime(year, month, 1) + relativedelta(day=31)).day == day:
+                relative_delta = relativedelta(hours=23)
+
+            start_date = {'day': day, 'month': month, 'year': year}
+            finsh = datetime(year, month, day) + relative_delta
+            finish_date = {'day': finsh.day, 'month': finsh.month, 'year': finsh.year}
 
         elif month:
             if not year:
                 return {'msg': self.MESSAGE_409}, 409
 
+            finsh = datetime(year, month, 1) + relativedelta(day=31)
             start_date = {'day': 1, 'month': month, 'year': year}
-            finish_date = {'day': 1, 'month': month + 1, 'year': year}
+            finish_date = {'day': finsh.day, 'month': month, 'year': year}
 
         elif year:
             start_date = {'day': 1, 'month': 1, 'year': year}
-            finish_date = {'day': 1, 'month': 1, 'year': year + 1}
+            finish_date = {'day': 31, 'month': 12, 'year': year}
 
         if len(start_date) > 0:
             start, finish = datetime(**start_date), datetime(**finish_date)

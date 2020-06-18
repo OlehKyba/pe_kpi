@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from 'react-redux';
 import moment from '../../moment';
 
-import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin, Result, Form, Input, Button} from 'antd';
+import {Layout, Menu, Row, Col, Breadcrumb, Divider, Spin, Result } from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -12,8 +12,10 @@ import './index.css';
 
 import Charts from "./components/Charts";
 import ControlPanel from "./components/ControlPanel";
+import UserForm from "./components/UserForm";
 import { readStandards, selectMoment } from "../../redux/actions/standardsActions";
-import {logout} from "../../redux/actions/authActions";
+import { logout } from "../../redux/actions/authActions";
+import { getUserData, updateUserData, deleteUser } from "../../redux/actions/userActions";
 
 const { Content, Sider, Footer } = Layout;
 const { SubMenu } = Menu;
@@ -48,6 +50,9 @@ class Home extends Component {
             moment: props.selectedDate,
             collapsed: true,
             path: [this.subMenuKeys.months.value, moment.months(props.selectedDate.month())],
+            user: props.user,
+            isUserInProcess: props.isUserInProcess,
+            userError: props.userError,
         }
     }
 
@@ -70,8 +75,22 @@ class Home extends Component {
                 this.props.readStandards({month: thunkedMonth, year});
             }
         }
+        if (this.props.user !== prevProps.user || this.props.userError !== prevProps.userError || this.props.isUserInProcess !== prevProps.isUserInProcess){
+            this.setState({
+                user: this.props.user,
+                isUserInProcess: this.props.isUserInProcess,
+                userError: this.props.userError,
+            })
+        }
     }
 
+    onUserDataUpdate = data => {
+       this.props.updateUserData(data);
+    };
+
+    onUserDelete = () => {
+        this.props.deleteUser();
+    };
 
     onCollapse = collapsed => {
         this.setState({ collapsed });
@@ -88,14 +107,16 @@ class Home extends Component {
             this.props.selectMoment({moment: date});
         }
         else if(newState.path[0] === this.subMenuKeys.user.value){
-
+            if (Object.keys(this.state.user).length < 1){
+                this.props.getUserData();
+            }
         }
         this.setState(newState);
     };
 
     render() {
         const isSpinning = this.props.readTemporaryStorage.length > 0;
-        const successLayout = (
+        const monthLayout = (
             <div className="site-layout-background" style={{ padding: 24, height: '385px' }}>
                 <Divider plain>Графіки</Divider>
                 <Row justify="center" align="center">
@@ -131,84 +152,17 @@ class Home extends Component {
         );
 
         const userDetailsLayout = (
-            <Form
-                initialValues={{
-                    name: 'Олег',
-                    surname: 'Киба',
-                    patronymic: 'Дмитрович',
-                    group: 'ІВ-72',
-                    club: 'Важка атлетика',
-                }}
-            >
-                <Form.Item
-                    name="name"
-                    label="Ім'я"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Це поле не може бути пустим!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    name="surname"
-                    label="Прізвище"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Це поле не може бути пустим!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    name="patronymic"
-                    label="Прізвище"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Це поле не може бути пустим!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    name="group"
-                    label="Група"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Це поле не може бути пустим!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    name="club"
-                    label="Спортивна секція"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Це поле не може бути пустим!',
-                        },
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Button block ype="primary" htmlType="submit">Оновити данні</Button>
-            </Form>
+            <Spin spinning={this.state.isUserInProcess}>
+                <UserForm
+                    initialValues={this.state.user}
+                    onFinish={this.onUserDataUpdate}
+                    removeUser={this.onUserDelete}
+                />
+            </Spin>
         );
 
+        const successLayout = this.state.path[0] === this.subMenuKeys.months.value ? monthLayout : userDetailsLayout;
+        //const successLayout = monthLayout;
         const errorLayout = (
             <div className="site-layout-background" style={{ padding: 24, minHeight: '500px' }}>
                 <Result
@@ -264,7 +218,7 @@ class Home extends Component {
                                 </Breadcrumb.Item>))
                             }
                         </Breadcrumb>
-                        { this.props.readError ? errorLayout : successLayout }
+                        { this.props.readError || this.props.userError ? errorLayout : successLayout }
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>KPI PE ©2020</Footer>
                 </Layout>
@@ -322,8 +276,18 @@ const mapStateToProps = state => {
         datasets: mapStateToDatasets(state.standards),
         readTemporaryStorage: state.standards.readTemporaryStorage,
         readError: state.standards.errors.read,
+        userError: state.users.error,
+        user: state.users.user,
+        isUserInProcess: state.users.isReading || state.users.isUpdating || state.users.isDeleting,
     };
 };
 
 
-export default connect(mapStateToProps, { selectMoment, readStandards, logout })(Home);
+export default connect(mapStateToProps, {
+    selectMoment,
+    readStandards,
+    logout,
+    getUserData,
+    updateUserData,
+    deleteUser
+})(Home);
